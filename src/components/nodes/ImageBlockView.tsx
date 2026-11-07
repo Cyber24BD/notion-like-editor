@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
+import type { Node as PMNode } from '@tiptap/pm/model'
 import { pickImageFile } from '../../editor/images/imageFiles'
 import { Menu, type MenuNode } from '../Menu'
 import {
@@ -17,10 +18,12 @@ import {
   AlignRight,
   Crop,
   Frame,
+  Maximize,
   Replace,
   Trash,
 } from '../Icons'
 import { LazyCropDialog } from '../lazy/LazyWidgets'
+import { ImageLightbox, type LightboxImage } from '../ImageLightbox'
 
 const SIZE_PRESETS = [
   { label: 'S', value: 25, title: 'Small — 25% width' },
@@ -37,9 +40,25 @@ const FRAME_OPTIONS = [
   { value: 'frame', label: 'Polaroid frame' },
 ]
 
-const TOOLBAR_WIDTH = 392
+const TOOLBAR_WIDTH = 420
 
 type Corner = 'nw' | 'ne' | 'sw' | 'se'
+
+function collectImages(doc: PMNode): LightboxImage[] {
+  const images: LightboxImage[] = []
+  doc.descendants((node, pos) => {
+    if (node.type.name !== 'image') return
+    const src = String(node.attrs.src ?? '')
+    if (!src) return
+    images.push({
+      src,
+      alt: String(node.attrs.alt ?? ''),
+      caption: String(node.attrs.caption ?? ''),
+      pos,
+    })
+  })
+  return images
+}
 
 export function ImageBlockView({
   node,
@@ -68,6 +87,10 @@ export function ImageBlockView({
   const [cropOpen, setCropOpen] = useState(false)
   const [resizing, setResizing] = useState(false)
   const [captionDraft, setCaptionDraft] = useState(caption)
+  const [lightbox, setLightbox] = useState<{
+    images: LightboxImage[]
+    index: number
+  } | null>(null)
 
   useEffect(() => {
     setCaptionDraft(caption)
@@ -170,6 +193,14 @@ export function ImageBlockView({
     setStyleMenuAt({ x: rect.left, y: rect.bottom + 6 })
   }
 
+  const openLightbox = () => {
+    const images = collectImages(editor.state.doc)
+    if (images.length === 0) return
+    const pos = getPos()
+    const index = images.findIndex((image) => image.pos === pos)
+    setLightbox({ images, index: index >= 0 ? index : 0 })
+  }
+
   const styleEntries: MenuNode[] = FRAME_OPTIONS.map((option) => ({
     id: option.value,
     label: option.label,
@@ -236,6 +267,15 @@ export function ImageBlockView({
               <AlignRight size={15} />
             </button>
             <span className="image-toolbar__divider" />
+            <button
+              type="button"
+              className="image-toolbar__btn"
+              data-tooltip="Preview"
+              aria-label="Preview image"
+              onClick={openLightbox}
+            >
+              <Maximize size={15} />
+            </button>
             <button
               type="button"
               className="image-toolbar__btn"
@@ -306,19 +346,16 @@ export function ImageBlockView({
         ref={frameRef}
         className="image-block__frame"
         style={{ width: `${width}%` }}
-        onClick={(event) => {
-          event.stopPropagation()
-          const pos = getPos()
-          if (!selected && typeof pos === 'number') {
-            editor.commands.setNodeSelection(pos)
-          }
-        }}
       >
         <img
           src={src}
           alt={alt || caption}
           draggable={false}
           onLoad={updateToolbarPosition}
+          onClick={(event) => {
+            event.stopPropagation()
+            openLightbox()
+          }}
         />
         {selected &&
           !cropOpen &&
@@ -363,6 +400,19 @@ export function ImageBlockView({
           src={src}
           onClose={() => setCropOpen(false)}
           onApply={(nextSrc) => updateAttributes({ src: nextSrc })}
+        />
+      )}
+
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          onIndexChange={(nextIndex) =>
+            setLightbox((current) =>
+              current ? { ...current, index: nextIndex } : current,
+            )
+          }
+          onClose={() => setLightbox(null)}
         />
       )}
     </NodeViewWrapper>

@@ -1,5 +1,7 @@
 import type { Editor, Range } from '@tiptap/core'
 import {
+  Audio,
+  Bookmark,
   CalloutIcon,
   ChartBar,
   Code as CodeIcon,
@@ -13,7 +15,9 @@ import {
   ListOrdered,
   PageIcon,
   Quote as QuoteIcon,
+  Sigma,
   Table as TableIcon,
+  TableOfContents,
   Todo,
   Video as VideoIcon,
   ToggleIcon,
@@ -21,7 +25,10 @@ import {
 } from '../../components/Icons'
 import { pickImageFile } from '../images/imageFiles'
 import { openVideoDialog } from '../video/dialogStore'
+import { openAudioDialog } from '../audio/dialogStore'
 import { openIframeDialog } from '../iframe/dialogStore'
+import { openBookmarkDialog } from '../bookmark/dialogStore'
+import { openMathDialog } from '../math/dialogStore'
 import type { SlashItem } from './types'
 
 function chain(editor: Editor, range: Range | null) {
@@ -223,6 +230,39 @@ export const slashItems: SlashItem[] = [
     },
   },
   {
+    id: 'audio',
+    title: 'Audio',
+    subtitle: 'Embed Spotify, SoundCloud, Apple Podcasts or an audio file.',
+    group: 'Media',
+    icon: <Audio size={ICON_SIZE} />,
+    keywords: [
+      'audio',
+      'music',
+      'podcast',
+      'spotify',
+      'soundcloud',
+      'apple podcasts',
+      'apple music',
+      'mixcloud',
+      'deezer',
+      'tidal',
+      'mp3',
+      'wav',
+      'ogg',
+      'm4a',
+      'flac',
+      'sound',
+      'player',
+      'embed',
+    ],
+    run: ({ editor, range }) => {
+      const commands = editor.chain().focus()
+      if (range) commands.deleteRange(range)
+      commands.run()
+      openAudioDialog(editor)
+    },
+  },
+  {
     id: 'iframe',
     title: 'Iframe',
     subtitle: 'Embed a website, map, form or widget.',
@@ -246,6 +286,87 @@ export const slashItems: SlashItem[] = [
       if (range) commands.deleteRange(range)
       commands.run()
       openIframeDialog(editor)
+    },
+  },
+  {
+    id: 'bookmark',
+    title: 'Bookmark',
+    subtitle: 'Create a link preview card with title and description.',
+    group: 'Media',
+    icon: <Bookmark size={ICON_SIZE} />,
+    keywords: [
+      'bookmark',
+      'link',
+      'url',
+      'preview',
+      'card',
+      'website',
+      'article',
+      'embed',
+    ],
+    run: ({ editor, range }) => {
+      const commands = editor.chain().focus()
+      if (range) commands.deleteRange(range)
+      commands.run()
+      openBookmarkDialog(editor)
+    },
+  },
+  {
+    id: 'math',
+    title: 'Math',
+    subtitle: 'Insert an inline or block LaTeX equation.',
+    group: 'Advanced',
+    icon: <Sigma size={ICON_SIZE} />,
+    keywords: [
+      'math',
+      'latex',
+      'equation',
+      'formula',
+      'katex',
+      'inline',
+      'block',
+      'symbol',
+      'fraction',
+      'matrix',
+    ],
+    run: ({ editor, range }) => {
+      const commands = editor.chain().focus()
+      if (range) commands.deleteRange(range)
+      commands.run()
+      openMathDialog({
+        editor,
+        mode: 'block',
+        initialLatex: '',
+        allowModeChange: true,
+        onApply: (latex, mode) => {
+          if (mode === 'inline') {
+            editor.chain().focus().setInlineMath(latex).run()
+          } else {
+            editor.chain().focus().setBlockMath(latex).run()
+          }
+        },
+      })
+    },
+  },
+  {
+    id: 'table-of-contents',
+    title: 'Table of contents',
+    subtitle: 'Jump to headings on this page.',
+    group: 'Advanced',
+    icon: <TableOfContents size={ICON_SIZE} />,
+    keywords: [
+      'toc',
+      'table of contents',
+      'outline',
+      'headings',
+      'navigation',
+      'index',
+      'contents',
+    ],
+    run: ({ editor, range }) => {
+      chain(editor, range)
+        .setTableOfContents({ title: 'Table of contents' })
+        .run()
     },
   },
   {

@@ -24,6 +24,38 @@ function Svg({ size = 16, children, ...rest }: IconProps & { children: ReactNode
   )
 }
 
+export const Minus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 12h14" />
+  </Svg>
+)
+
+export const ZoomIn = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m16.4 16.4 4.6 4.6M11 8v6M8 11h6" />
+  </Svg>
+)
+
+export const ZoomOut = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m16.4 16.4 4.6 4.6M8 11h6" />
+  </Svg>
+)
+
+export const Maximize = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+  </Svg>
+)
+
+export const Minimize = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5" />
+  </Svg>
+)
+
 export const Plus = (p: IconProps) => (
   <Svg {...p}>
     <path d="M12 5v14M5 12h14" />
@@ -47,6 +79,12 @@ export const Grip = ({ size = 16, ...rest }: IconProps) => (
     <circle cx="9" cy="18" r="1.5" />
     <circle cx="15" cy="18" r="1.5" />
   </svg>
+)
+
+export const ChevronLeft = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Svg>
 )
 
 export const ChevronRight = (p: IconProps) => (
@@ -130,6 +168,32 @@ export const ArrowDown = (p: IconProps) => (
 export const ArrowLeft = (p: IconProps) => (
   <Svg {...p}>
     <path d="M19 12H5M11 6l-6 6 6 6" />
+  </Svg>
+)
+
+export const Sigma = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M18 4H6l6 8-6 8h12" />
+  </Svg>
+)
+
+export const Pencil = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </Svg>
+)
+
+export const TableOfContents = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 6h16M4 12h10M4 18h13" />
+    <path d="M4 6h.01M4 12h.01M4 18h.01" />
+  </Svg>
+)
+
+export const Bookmark = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
   </Svg>
 )
 
@@ -380,6 +444,22 @@ export const Frame = (p: IconProps) => (
   </Svg>
 )
 
+export const WrapText = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 6h18M3 12h13a3 3 0 0 1 0 6h-3" />
+    <path d="m15 15-3 3 3 3" />
+    <path d="M3 18h6" />
+  </Svg>
+)
+
+export const Download = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3v12" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M4 21h16" />
+  </Svg>
+)
+
 export const Refresh = (p: IconProps) => (
   <Svg {...p}>
     <path d="M20 11a8 8 0 1 0-2.3 5.7" />
@@ -412,6 +492,14 @@ export const Split = (p: IconProps) => (
 export const TextColor = (p: IconProps) => (
   <Svg {...p}>
     <path d="M5.5 17 10.5 6h3L18.5 17M7.8 13h8.4" />
+  </Svg>
+)
+
+export const Audio = ({ size = 22, ...rest }: IconProps) => (
+  <Svg size={size} {...rest}>
+    <path d="M9 18V5l10-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="16" cy="16" r="3" />
   </Svg>
 )
 

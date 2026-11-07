@@ -1,20 +1,34 @@
 import { lazy, Suspense, type ComponentProps } from 'react'
+import type { AudioDialog } from '../AudioDialog'
+import type { BookmarkDialog } from '../BookmarkDialog'
 import type { ChartSettingsDialog } from '../ChartSettingsDialog'
 import type { ColorPalette } from '../ColorPalette'
 import type { CommandPalette } from '../CommandPalette'
 import type { CropDialog } from '../nodes/CropDialog'
 import type { EmojiPicker } from '../EmojiPicker'
 import type { IframeDialog } from '../IframeDialog'
+import type { MathDialog } from '../MathDialog'
 import type { VideoDialog } from '../VideoDialog'
 
+type AudioDialogProps = ComponentProps<typeof AudioDialog>
+type BookmarkDialogProps = ComponentProps<typeof BookmarkDialog>
 type ChartSettingsProps = ComponentProps<typeof ChartSettingsDialog>
 type ColorPaletteProps = ComponentProps<typeof ColorPalette>
 type CommandPaletteProps = ComponentProps<typeof CommandPalette>
 type CropDialogProps = ComponentProps<typeof CropDialog>
 type EmojiPickerProps = ComponentProps<typeof EmojiPicker>
 type IframeDialogProps = ComponentProps<typeof IframeDialog>
+type MathDialogProps = ComponentProps<typeof MathDialog>
 type VideoDialogProps = ComponentProps<typeof VideoDialog>
 
+const AudioDialogLazy = lazy(() =>
+  import('../AudioDialog').then((module) => ({ default: module.AudioDialog })),
+)
+const BookmarkDialogLazy = lazy(() =>
+  import('../BookmarkDialog').then((module) => ({
+    default: module.BookmarkDialog,
+  })),
+)
 const ChartSettingsLazy = lazy(() =>
   import('../ChartSettingsDialog').then((module) => ({
     default: module.ChartSettingsDialog,
@@ -35,9 +49,28 @@ const EmojiPickerLazy = lazy(() =>
 const IframeDialogLazy = lazy(() =>
   import('../IframeDialog').then((module) => ({ default: module.IframeDialog })),
 )
+const MathDialogLazy = lazy(() =>
+  import('../MathDialog').then((module) => ({ default: module.MathDialog })),
+)
 const VideoDialogLazy = lazy(() =>
   import('../VideoDialog').then((module) => ({ default: module.VideoDialog })),
 )
+
+export function LazyAudioDialog(props: AudioDialogProps) {
+  return (
+    <Suspense fallback={null}>
+      <AudioDialogLazy {...props} />
+    </Suspense>
+  )
+}
+
+export function LazyBookmarkDialog(props: BookmarkDialogProps) {
+  return (
+    <Suspense fallback={null}>
+      <BookmarkDialogLazy {...props} />
+    </Suspense>
+  )
+}
 
 export function LazyChartSettingsDialog(props: ChartSettingsProps) {
   return (
@@ -79,6 +112,14 @@ export function LazyEmojiPicker(props: EmojiPickerProps) {
   )
 }
 
+export function LazyMathDialog(props: MathDialogProps) {
+  return (
+    <Suspense fallback={null}>
+      <MathDialogLazy {...props} />
+    </Suspense>
+  )
+}
+
 export function LazyIframeDialog(props: IframeDialogProps) {
   return (
     <Suspense fallback={null}>
@@ -101,10 +142,13 @@ export function LazyVideoDialog(props: VideoDialogProps) {
  * stays smaller.
  */
 export function preloadFeatureDialogs() {
+  void import('../AudioDialog')
+  void import('../BookmarkDialog')
   void import('../ChartSettingsDialog')
   void import('../ColorPalette')
   void import('../nodes/CropDialog')
   void import('../EmojiPicker')
   void import('../IframeDialog')
+  void import('../MathDialog')
   void import('../VideoDialog')
 }

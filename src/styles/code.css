@@ -1,0 +1,211 @@
+/* ------------------------------------------------------------------ *
+ * Code block                                                         *
+ * ------------------------------------------------------------------ */
+
+.code-block {
+  position: relative;
+  margin: 10px 0 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-code);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.code-block[data-selected='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.code-block__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 6px 4px 10px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-code) 82%, var(--bg-elevated));
+  user-select: none;
+}
+
+.code-block__language-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  max-width: 180px;
+}
+
+.code-block__language {
+  appearance: none;
+  height: 24px;
+  max-width: 180px;
+  padding: 0 22px 0 7px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+
+.code-block__language:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.code-block__language:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+[data-theme='dark'] .code-block__language {
+  color-scheme: dark;
+}
+
+.code-block__language-chevron {
+  position: absolute;
+  right: 6px;
+  pointer-events: none;
+  color: var(--text-tertiary);
+}
+
+.code-block__line-count {
+  flex: none;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.code-block__actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: auto;
+  opacity: 0.55;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.code-block:hover .code-block__actions,
+.code-block[data-selected='true'] .code-block__actions {
+  opacity: 1;
+}
+
+.code-block__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: none;
+  height: 24px;
+  min-width: 26px;
+  padding: 0 5px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.code-block__btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.code-block__btn[data-active='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.code-block__btn--wide {
+  padding: 0 6px;
+}
+
+.code-block__body {
+  display: flex;
+  align-items: flex-start;
+  max-height: 420px;
+  overflow: auto;
+  background: var(--bg-code);
+  -webkit-overflow-scrolling: touch;
+}
+
+.code-block__gutter {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  flex: none;
+  min-width: 2.5em;
+  padding: 14px 8px 14px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-code);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+  text-align: right;
+  white-space: pre;
+  user-select: none;
+}
+
+.notion-editor .code-block__pre {
+  flex: 1;
+  min-width: max-content;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.notion-editor .code-block__code {
+  display: block;
+  padding: 0;
+  background: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+}
+
+.code-block[data-wrap='true'] .code-block__pre {
+  width: 100%;
+  min-width: 0;
+}
+
+.code-block[data-wrap='true'] .code-block__code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .code-block__line-count {
+    display: none;
+  }
+
+  .code-block__language {
+    max-width: 120px;
+  }
+
+  .code-block__language-wrap {
+    max-width: 120px;
+  }
+
+  .code-block__btn--wide span {
+    display: none;
+  }
+}

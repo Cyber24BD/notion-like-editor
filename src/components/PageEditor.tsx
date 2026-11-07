@@ -5,8 +5,12 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import { createExtensions } from '../editor/createExtensions'
 import { imageFilesFromTransfer, insertImageFiles } from '../editor/images/imageFiles'
 import { defaultVideoAttrs, parseVideoFromTransfer } from '../editor/video/parseVideo'
+import { defaultAudioAttrs, parseAudioFromTransfer } from '../editor/audio/parseAudio'
 import { closeVideoDialog } from '../editor/video/dialogStore'
+import { closeAudioDialog } from '../editor/audio/dialogStore'
 import { closeIframeDialog } from '../editor/iframe/dialogStore'
+import { closeBookmarkDialog } from '../editor/bookmark/dialogStore'
+import { closeMathDialog } from '../editor/math/dialogStore'
 import { PageNavContext } from '../editor/PageNavContext'
 import type { PageReference } from '../editor/nodes/PageLink'
 import { BlockHandle } from './BlockHandle'
@@ -14,6 +18,9 @@ import { BubbleToolbar } from './BubbleToolbar'
 import { SlashMenu } from './SlashMenu'
 import { VideoDialogHost } from './VideoDialogHost'
 import { IframeDialogHost } from './IframeDialogHost'
+import { BookmarkDialogHost } from './BookmarkDialogHost'
+import { AudioDialogHost } from './AudioDialogHost'
+import { MathDialogHost } from './MathDialogHost'
 import { LazyEmojiPicker, preloadFeatureDialogs } from './lazy/LazyWidgets'
 import { TableToolbar } from './TableToolbar'
 
@@ -50,6 +57,25 @@ const EDITOR_PROPS: EditorProps = {
       if (nodeType && $from.parent.isTextblock && $from.parent.content.size === 0) {
         event.preventDefault()
         const node = nodeType.create(defaultVideoAttrs(video))
+        const tr = view.state.tr.replaceWith(
+          $from.before($from.depth),
+          $from.after($from.depth),
+          node,
+        )
+        tr.scrollIntoView()
+        view.dispatch(tr)
+        return true
+      }
+    }
+
+    // Paste a recognized audio link / iframe on an empty line -> real embed.
+    const audio = parseAudioFromTransfer(event.clipboardData)
+    if (audio) {
+      const { $from } = view.state.selection
+      const nodeType = view.state.schema.nodes.audioEmbed
+      if (nodeType && $from.parent.isTextblock && $from.parent.content.size === 0) {
+        event.preventDefault()
+        const node = nodeType.create(defaultAudioAttrs(audio))
         const tr = view.state.tr.replaceWith(
           $from.before($from.depth),
           $from.after($from.depth),
@@ -150,7 +176,10 @@ function PageEditor({
     return () => {
       window.clearTimeout(timer)
       closeVideoDialog()
+      closeAudioDialog()
       closeIframeDialog()
+      closeBookmarkDialog()
+      closeMathDialog()
     }
   }, [])
 
@@ -293,7 +322,10 @@ function PageEditor({
       </div>
       <SlashMenu />
       <VideoDialogHost />
+      <AudioDialogHost />
       <IframeDialogHost />
+      <BookmarkDialogHost />
+      <MathDialogHost />
     </div>
   )
 }

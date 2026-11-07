@@ -1,0 +1,381 @@
+/* ------------------------------------------------------------------ *
+ * Math equations                                                     *
+ * ------------------------------------------------------------------ */
+
+.math-inline {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0 2px;
+  border-radius: 3px;
+  color: inherit;
+  vertical-align: baseline;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.math-inline:hover {
+  background: var(--hover);
+}
+
+.math-inline[data-selected='true'] {
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.math-inline[data-error='true'] {
+  color: var(--danger);
+}
+
+.math-inline[data-empty='true'] {
+  color: var(--text-tertiary);
+}
+
+.math-inline__content {
+  display: inline-flex;
+  align-items: center;
+}
+
+.math-inline__content .katex {
+  font-size: 1em;
+}
+
+.math-inline__placeholder {
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+.math-block {
+  position: relative;
+  margin: 10px 0 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.math-block:hover {
+  border-color: var(--border-strong);
+}
+
+.math-block[data-selected='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.math-block[data-error='true'] {
+  border-color: var(--danger);
+}
+
+.math-block[data-empty='true'] {
+  color: var(--text-tertiary);
+}
+
+.math-block__content {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  padding: 2px 0;
+  font-size: 1.05em;
+}
+
+.math-block__content .katex-display {
+  margin: 0;
+}
+
+.math-block__placeholder {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+}
+
+.math-block__error {
+  margin-top: 8px;
+  color: var(--danger);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.math-block__toolbar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.math-block:hover .math-block__toolbar,
+.math-block[data-selected='true'] .math-block__toolbar {
+  opacity: 1;
+}
+
+.math-block__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.math-block__btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.math-block__btn[data-copied='true'] {
+  color: var(--accent);
+}
+
+.math-block__btn--danger:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * Math dialog                                                        *
+ * ------------------------------------------------------------------ */
+
+.math-dialog {
+  width: min(760px, 94vw);
+}
+
+.math-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.math-dialog__head-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.math-dialog__head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.math-dialog__mode {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--bg-input);
+}
+
+.math-dialog__mode-btn {
+  flex: 1;
+  height: 30px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.math-dialog__mode-btn:hover {
+  color: var(--text);
+}
+
+.math-dialog__mode-btn[data-active='true'] {
+  background: var(--bg-elevated);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.math-dialog__mode-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.math-dialog__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.math-dialog__badge {
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.math-dialog__input-wrap {
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.math-dialog__input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.math-dialog__input-wrap[data-error='true'] {
+  border-color: var(--danger);
+}
+
+.math-dialog__textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+}
+
+.math-dialog__textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+.math-dialog__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.math-dialog__preview[data-mode='block'] {
+  min-height: 110px;
+}
+
+.math-dialog__preview[data-error='true'] {
+  border-color: var(--danger);
+}
+
+.math-dialog__preview .katex-display {
+  margin: 0;
+}
+
+.math-dialog__preview-empty {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  font-style: italic;
+}
+
+.math-dialog__symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.math-dialog__symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 32px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.math-dialog__symbol:hover {
+  background: var(--hover);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.math-dialog__symbol .katex {
+  font-size: 0.9em;
+}
+
+.math-dialog__templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.math-dialog__template {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.math-dialog__template:hover {
+  background: var(--hover);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.math-dialog__copy,
+.math-dialog__clear {
+  gap: 5px;
+}
+
+.math-dialog__copy:disabled,
+.math-dialog__clear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .math-dialog__head-icon {
+    display: none;
+  }
+
+  .math-dialog__preview {
+    min-height: 80px;
+  }
+
+  .math-dialog__symbol {
+    min-width: 30px;
+    height: 30px;
+  }
+}

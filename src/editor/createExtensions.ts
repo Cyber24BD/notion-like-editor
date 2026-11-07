@@ -7,41 +7,20 @@ import { TableKit } from '@tiptap/extension-table'
 import { Highlight } from '@tiptap/extension-highlight'
 import { Typography } from '@tiptap/extension-typography'
 import { Color, TextStyle } from '@tiptap/extension-text-style'
-import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
-import { createLowlight } from 'lowlight'
-import bash from 'highlight.js/lib/languages/bash'
-import css from 'highlight.js/lib/languages/css'
-import javascript from 'highlight.js/lib/languages/javascript'
-import json from 'highlight.js/lib/languages/json'
-import markdown from 'highlight.js/lib/languages/markdown'
-import python from 'highlight.js/lib/languages/python'
-import sql from 'highlight.js/lib/languages/sql'
-import typescript from 'highlight.js/lib/languages/typescript'
-import xml from 'highlight.js/lib/languages/xml'
-import yaml from 'highlight.js/lib/languages/yaml'
 import { Callout } from './nodes/Callout'
 import { ToggleBlock } from './nodes/Toggle'
 import { PageLink } from './nodes/PageLink'
 import { ImageBlock } from './nodes/ImageBlock'
 import { VideoEmbed } from './nodes/VideoEmbed'
+import { AudioEmbed } from './nodes/AudioEmbed'
 import { IframeEmbed } from './nodes/IframeEmbed'
+import { Bookmark } from './nodes/Bookmark'
+import { CodeBlock } from './nodes/CodeBlock'
+import { TableOfContents } from './nodes/TableOfContents'
+import { InlineMath } from './nodes/InlineMath'
+import { BlockMath } from './nodes/BlockMath'
 import { Chart } from './nodes/Chart'
 import { SlashCommand } from './slash/SlashCommand'
-
-// Only the languages an editor realistically needs. Anything else falls back
-// to automatic detection instead of shipping the full highlight.js grammar set.
-const lowlight = createLowlight({
-  bash,
-  css,
-  javascript,
-  json,
-  markdown,
-  python,
-  sql,
-  typescript,
-  xml,
-  yaml,
-})
 
 export function createExtensions(): Extensions {
   return [
@@ -76,7 +55,7 @@ export function createExtensions(): Extensions {
       },
     }),
     Focus.configure({ className: 'has-focus', mode: 'deepest' }),
-    CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'typescript' }),
+    CodeBlock,
     TaskList,
     TaskItem.configure({ nested: true }),
     ImageBlock.configure({ allowBase64: true }),
@@ -96,7 +75,12 @@ export function createExtensions(): Extensions {
     ToggleBlock,
     PageLink,
     VideoEmbed,
+    AudioEmbed,
     IframeEmbed,
+    Bookmark,
+    TableOfContents,
+    InlineMath,
+    BlockMath,
     Chart,
     SlashCommand,
   ]
