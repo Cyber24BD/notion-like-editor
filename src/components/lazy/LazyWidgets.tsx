@@ -8,6 +8,7 @@ import type { CropDialog } from '../nodes/CropDialog'
 import type { EmojiPicker } from '../EmojiPicker'
 import type { IframeDialog } from '../IframeDialog'
 import type { MathDialog } from '../MathDialog'
+import type { MermaidDialog } from '../MermaidDialog'
 import type { VideoDialog } from '../VideoDialog'
 
 type AudioDialogProps = ComponentProps<typeof AudioDialog>
@@ -19,6 +20,7 @@ type CropDialogProps = ComponentProps<typeof CropDialog>
 type EmojiPickerProps = ComponentProps<typeof EmojiPicker>
 type IframeDialogProps = ComponentProps<typeof IframeDialog>
 type MathDialogProps = ComponentProps<typeof MathDialog>
+type MermaidDialogProps = ComponentProps<typeof MermaidDialog>
 type VideoDialogProps = ComponentProps<typeof VideoDialog>
 
 const AudioDialogLazy = lazy(() =>
@@ -51,6 +53,11 @@ const IframeDialogLazy = lazy(() =>
 )
 const MathDialogLazy = lazy(() =>
   import('../MathDialog').then((module) => ({ default: module.MathDialog })),
+)
+const MermaidDialogLazy = lazy(() =>
+  import('../MermaidDialog').then((module) => ({
+    default: module.MermaidDialog,
+  })),
 )
 const VideoDialogLazy = lazy(() =>
   import('../VideoDialog').then((module) => ({ default: module.VideoDialog })),
@@ -112,6 +119,14 @@ export function LazyEmojiPicker(props: EmojiPickerProps) {
   )
 }
 
+export function LazyMermaidDialog(props: MermaidDialogProps) {
+  return (
+    <Suspense fallback={null}>
+      <MermaidDialogLazy {...props} />
+    </Suspense>
+  )
+}
+
 export function LazyMathDialog(props: MathDialogProps) {
   return (
     <Suspense fallback={null}>
@@ -150,5 +165,6 @@ export function preloadFeatureDialogs() {
   void import('../EmojiPicker')
   void import('../IframeDialog')
   void import('../MathDialog')
+  void import('../MermaidDialog')
   void import('../VideoDialog')
 }

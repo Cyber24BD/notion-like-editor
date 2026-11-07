@@ -13,6 +13,7 @@ import {
   ImageIcon,
   ListBulleted,
   ListOrdered,
+  Mermaid,
   PageIcon,
   Quote as QuoteIcon,
   Sigma,
@@ -29,6 +30,8 @@ import { openAudioDialog } from '../audio/dialogStore'
 import { openIframeDialog } from '../iframe/dialogStore'
 import { openBookmarkDialog } from '../bookmark/dialogStore'
 import { openMathDialog } from '../math/dialogStore'
+import { openMermaidDialog } from '../mermaid/dialogStore'
+import { MERMAID_TEMPLATES } from '../mermaid/templates'
 import type { SlashItem } from './types'
 
 function chain(editor: Editor, range: Range | null) {
@@ -344,6 +347,44 @@ export const slashItems: SlashItem[] = [
           } else {
             editor.chain().focus().setBlockMath(latex).run()
           }
+        },
+      })
+    },
+  },
+  {
+    id: 'mermaid',
+    title: 'Mermaid',
+    subtitle: 'Create flowcharts, sequence diagrams, Gantt charts and more.',
+    group: 'Advanced',
+    icon: <Mermaid size={ICON_SIZE} />,
+    keywords: [
+      'mermaid',
+      'diagram',
+      'flowchart',
+      'sequence',
+      'gantt',
+      'chart',
+      'graph',
+      'uml',
+      'mindmap',
+      'timeline',
+      'kanban',
+      'er',
+      'class',
+      'state',
+    ],
+    run: ({ editor, range }) => {
+      const commands = editor.chain().focus()
+      if (range) commands.deleteRange(range)
+      commands.run()
+      openMermaidDialog({
+        editor,
+        initialCode: MERMAID_TEMPLATES[0]?.code ?? '',
+        initialTheme:
+          document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default',
+        initialHeight: 0,
+        onApply: (code, theme, height) => {
+          editor.chain().focus().setMermaid({ code, theme, height }).run()
         },
       })
     },

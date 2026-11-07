@@ -19,6 +19,7 @@ import { CodeBlock } from './nodes/CodeBlock'
 import { TableOfContents } from './nodes/TableOfContents'
 import { InlineMath } from './nodes/InlineMath'
 import { BlockMath } from './nodes/BlockMath'
+import { Mermaid } from './nodes/Mermaid'
 import { Chart } from './nodes/Chart'
 import { SlashCommand } from './slash/SlashCommand'
 
@@ -81,6 +82,7 @@ export function createExtensions(): Extensions {
     TableOfContents,
     InlineMath,
     BlockMath,
+    Mermaid,
     Chart,
     SlashCommand,
   ]

@@ -171,6 +171,15 @@ export const ArrowLeft = (p: IconProps) => (
   </Svg>
 )
 
+export const Mermaid = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="7" height="5" rx="1" />
+    <rect x="14" y="3" width="7" height="5" rx="1" />
+    <rect x="8.5" y="16" width="7" height="5" rx="1" />
+    <path d="M6.5 8v4h11V8M12 12v4" />
+  </Svg>
+)
+
 export const Sigma = (p: IconProps) => (
   <Svg {...p}>
     <path d="M18 4H6l6 8-6 8h12" />

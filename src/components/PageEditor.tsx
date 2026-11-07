@@ -11,6 +11,7 @@ import { closeAudioDialog } from '../editor/audio/dialogStore'
 import { closeIframeDialog } from '../editor/iframe/dialogStore'
 import { closeBookmarkDialog } from '../editor/bookmark/dialogStore'
 import { closeMathDialog } from '../editor/math/dialogStore'
+import { closeMermaidDialog } from '../editor/mermaid/dialogStore'
 import { PageNavContext } from '../editor/PageNavContext'
 import type { PageReference } from '../editor/nodes/PageLink'
 import { BlockHandle } from './BlockHandle'
@@ -21,6 +22,7 @@ import { IframeDialogHost } from './IframeDialogHost'
 import { BookmarkDialogHost } from './BookmarkDialogHost'
 import { AudioDialogHost } from './AudioDialogHost'
 import { MathDialogHost } from './MathDialogHost'
+import { MermaidDialogHost } from './MermaidDialogHost'
 import { LazyEmojiPicker, preloadFeatureDialogs } from './lazy/LazyWidgets'
 import { TableToolbar } from './TableToolbar'
 
@@ -180,6 +182,7 @@ function PageEditor({
       closeIframeDialog()
       closeBookmarkDialog()
       closeMathDialog()
+      closeMermaidDialog()
     }
   }, [])
 
@@ -326,6 +329,7 @@ function PageEditor({
       <IframeDialogHost />
       <BookmarkDialogHost />
       <MathDialogHost />
+      <MermaidDialogHost />
     </div>
   )
 }

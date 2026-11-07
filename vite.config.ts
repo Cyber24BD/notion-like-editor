@@ -17,10 +17,26 @@ export default defineConfig({
     },
   },
   build: {
+    // Mermaid is large and only needed when a diagram is opened. Keep it out
+    // of the initial modulepreload list so the editor starts fast.
+    modulePreload: {
+      resolveDependencies: (_filename, deps) =>
+        deps.filter((dep) => !dep.includes('mermaid-vendor')),
+    },
     rolldownOptions: {
       output: {
         codeSplitting: {
           groups: [
+            {
+              name: 'katex-vendor',
+              test: /node_modules[\/]katex[\/]/,
+              priority: 50,
+            },
+            {
+              name: 'mermaid-vendor',
+              test: /node_modules[\/](mermaid|@mermaid-js|@braintree|@iconify|@upsetjs|cytoscape|cytoscape-cose-bilkent|cytoscape-fcose|d3|d3-sankey|dagre-d3-es|dayjs|dompurify|es-toolkit|fastdom|khroma|marked|roughjs|stylis|ts-dedent|uuid)[\/]/,
+              priority: 40,
+            },
             {
               name: 'react-vendor',
               test: /node_modules[\/](react|react-dom|scheduler)[\/]/,
