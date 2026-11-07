@@ -1,0 +1,203 @@
+/* ------------------------------------------------------------------ *
+ * Inline color palette (text + highlight)                            *
+ * ------------------------------------------------------------------ */
+
+.color-palette {
+  position: fixed;
+  z-index: var(--z-popover);
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  animation: popover-in var(--dur) var(--ease-out);
+  transform-origin: top center;
+}
+
+.color-palette__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px 8px;
+}
+
+.color-palette__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.color-palette__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-xs);
+  color: var(--text-tertiary);
+}
+
+.color-palette__close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.color-palette__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.color-palette__swatch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.color-palette__swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+
+.color-palette__swatch[data-active='true'] {
+  box-shadow: 0 0 0 2px var(--bg-elevated), 0 0 0 4px var(--accent);
+}
+
+.color-palette__swatch[data-active='true']:hover {
+  box-shadow: 0 0 0 2px var(--bg-elevated), 0 0 0 4px var(--accent);
+}
+
+.color-palette__swatch--none {
+  background: transparent !important;
+}
+
+.color-palette__swatch--none::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 50%;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--danger);
+  transform: rotate(-45deg);
+}
+
+.color-palette__swatch--default {
+  border-color: var(--border-strong);
+}
+
+.color-palette__preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+}
+
+.color-palette__label {
+  margin: 11px 2px 6px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.color-palette__recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+.color-palette__recent-swatch {
+  width: 24px;
+  height: 24px;
+  aspect-ratio: auto;
+  flex: none;
+  border-radius: 6px;
+}
+
+.color-palette__custom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 11px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.color-palette__custom:hover {
+  background: var(--hover);
+}
+
+.color-palette__custom[data-active='true'] {
+  border-color: var(--accent);
+}
+
+.color-palette__custom-dot {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: conic-gradient(
+    #ff5f5f,
+    #ffb84d,
+    #ffe75f,
+    #6fe08b,
+    #59c9e8,
+    #8f7bff,
+    #ff6fd8,
+    #ff5f5f
+  );
+}
+
+.color-palette__custom-label {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.color-palette__custom-value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+.color-palette__custom input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* A touch more breathing room on phones */
+@media (max-width: 640px) {
+  .color-palette {
+    padding: 11px;
+  }
+
+  .color-palette__grid {
+    gap: 7px;
+  }
+}

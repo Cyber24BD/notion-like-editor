@@ -1,0 +1,78 @@
+{
+  "name": "notion-like-editor",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A Notion-style block editor built with React, TypeScript, Tiptap and Vite.",
+  "license": "GPL-2.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cyber24BD/notion-like-editor.git"
+  },
+  "homepage": "https://github.com/Cyber24BD/notion-like-editor#readme",
+  "bugs": {
+    "url": "https://github.com/Cyber24BD/notion-like-editor/issues"
+  },
+  "keywords": [
+    "notion",
+    "editor",
+    "block-editor",
+    "rich-text",
+    "tiptap",
+    "react",
+    "typescript"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json && node scripts/fix-lib-types.mjs"
+  },
+  "dependencies": {
+    "@tiptap/extension-code-block-lowlight": "^3.33.0",
+    "@tiptap/extension-drag-handle-react": "^3.33.0",
+    "@tiptap/extension-highlight": "^3.33.0",
+    "@tiptap/extension-image": "^3.33.0",
+    "@tiptap/extension-list": "^3.33.0",
+    "@tiptap/extension-table": "^3.33.0",
+    "@tiptap/extension-text-style": "^3.33.0",
+    "@tiptap/extension-typography": "^3.33.0",
+    "@tiptap/extensions": "^3.33.0",
+    "@tiptap/pm": "^3.33.0",
+    "@tiptap/react": "^3.33.0",
+    "@tiptap/starter-kit": "^3.33.0",
+    "@tiptap/suggestion": "^3.33.0",
+    "highlight.js": "^11.12.0",
+    "lowlight": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.6"
+  },
+  "files": [
+    "dist-lib"
+  ],
+  "main": "./dist-lib/index.js",
+  "module": "./dist-lib/index.js",
+  "types": "./dist-lib/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-lib/lib/index.d.ts",
+      "import": "./dist-lib/index.js"
+    },
+    "./style.css": "./dist-lib/notion-editor.css"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

@@ -1,0 +1,639 @@
+/* ------------------------------------------------------------------ *
+ * Iframe embed block                                                 *
+ * ------------------------------------------------------------------ */
+
+.iframe-embed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 12px 0 14px;
+  padding: 2px 0;
+}
+
+.iframe-embed[data-align='left'] {
+  align-items: flex-start;
+}
+
+.iframe-embed[data-align='right'] {
+  align-items: flex-end;
+}
+
+.iframe-embed__frame {
+  position: relative;
+  max-width: 100%;
+  line-height: 0;
+  border-radius: 8px;
+  background: var(--bg-input);
+}
+
+.iframe-embed__frame::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 11px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color var(--dur) var(--ease-out);
+}
+
+.iframe-embed[data-selected='true'] .iframe-embed__frame::after,
+.iframe-embed[data-resizing='true'] .iframe-embed__frame::after {
+  border-color: var(--accent);
+}
+
+.iframe-embed__player {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+}
+
+/*
+ * The iframe element itself cannot style the scrollbars of a cross-origin
+ * document. These rules cover same-origin embeds in browsers that propagate
+ * scrollbar styling to the nested document; the NodeView also injects the
+ * same styles into same-origin documents on load.
+ */
+.iframe-embed__player::-webkit-scrollbar,
+.iframe-dialog__preview iframe::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.iframe-embed__player::-webkit-scrollbar-track,
+.iframe-dialog__preview iframe::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.iframe-embed__player::-webkit-scrollbar-thumb,
+.iframe-dialog__preview iframe::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.35);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-height: 44px;
+}
+
+.iframe-embed__player::-webkit-scrollbar-thumb:hover,
+.iframe-dialog__preview iframe::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+.iframe-embed__player::-webkit-scrollbar-thumb:active,
+.iframe-dialog__preview iframe::-webkit-scrollbar-thumb:active {
+  background-color: rgba(128, 128, 128, 0.65);
+}
+
+.iframe-embed__player::-webkit-scrollbar-corner,
+.iframe-dialog__preview iframe::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.iframe-embed__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.iframe-embed__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 8px;
+  background: rgba(15, 15, 15, 0.08);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease-out);
+}
+
+.iframe-embed__overlay:hover {
+  background: rgba(15, 15, 15, 0.32);
+}
+
+.iframe-embed__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(15, 15, 15, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px);
+  transition: transform var(--dur) var(--ease-spring),
+    background-color var(--dur) var(--ease-out);
+}
+
+.iframe-embed__overlay:hover .iframe-embed__badge {
+  transform: scale(1.06);
+  background: rgba(15, 15, 15, 0.86);
+}
+
+.iframe-embed__overlay-label {
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 15, 15, 0.58);
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.iframe-embed__overlay:hover .iframe-embed__overlay-label {
+  opacity: 1;
+}
+
+/* Custom scrollbar for same-origin embeds. Cross-origin documents cannot be
+ * measured, so the overlay is simply not rendered for them. */
+.iframe-embed__scrollbar {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  bottom: 4px;
+  z-index: 4;
+  width: 8px;
+  border-radius: var(--radius-full);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+  touch-action: none;
+}
+
+.iframe-embed:hover .iframe-embed__scrollbar,
+.iframe-embed[data-selected='true'] .iframe-embed__scrollbar,
+.iframe-embed[data-resizing='true'] .iframe-embed__scrollbar {
+  opacity: 1;
+}
+
+.iframe-embed__scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-radius: var(--radius-full);
+  background: rgba(128, 128, 128, 0.35);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.iframe-embed__scrollbar:hover .iframe-embed__scrollbar-thumb,
+.iframe-embed__scrollbar-thumb:active {
+  background: rgba(128, 128, 128, 0.55);
+}
+
+.iframe-embed__handle {
+  position: absolute;
+  z-index: 5;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg-elevated);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  touch-action: none;
+}
+
+.iframe-embed__handle--nw {
+  left: -6px;
+  top: -6px;
+  cursor: nwse-resize;
+}
+
+.iframe-embed__handle--ne {
+  right: -6px;
+  top: -6px;
+  cursor: nesw-resize;
+}
+
+.iframe-embed__handle--sw {
+  left: -6px;
+  bottom: -6px;
+  cursor: nesw-resize;
+}
+
+.iframe-embed__handle--se {
+  right: -6px;
+  bottom: -6px;
+  cursor: nwse-resize;
+}
+
+.iframe-embed__handle--bottom {
+  left: 50%;
+  bottom: -6px;
+  margin-left: -5.5px;
+  cursor: ns-resize;
+}
+
+.iframe-embed__caption-wrap {
+  padding-top: 5px;
+}
+
+.iframe-embed__caption {
+  display: block;
+  width: 100%;
+  height: 24px;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-align: left;
+  outline: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.iframe-embed:hover .iframe-embed__caption,
+.iframe-embed[data-selected='true'] .iframe-embed__caption,
+.iframe-embed[data-has-caption='true'] .iframe-embed__caption,
+.iframe-embed__caption:focus {
+  opacity: 1;
+}
+
+.iframe-embed__caption::placeholder {
+  color: var(--text-placeholder);
+}
+
+.iframe-toolbar__provider {
+  flex: none;
+  max-width: 120px;
+  overflow: hidden;
+  padding: 0 6px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ *
+ * Iframe dialog                                                      *
+ * ------------------------------------------------------------------ */
+
+.iframe-dialog {
+  width: min(760px, 94vw);
+}
+
+.iframe-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.iframe-dialog__head-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.iframe-dialog__head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.iframe-dialog__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.iframe-dialog__host-badge {
+  max-width: 220px;
+  overflow: hidden;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iframe-dialog__input-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-tertiary);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.iframe-dialog__input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.iframe-dialog__input-wrap[data-error='true'] {
+  border-color: var(--danger);
+}
+
+.iframe-dialog__input-wrap > svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.iframe-dialog__textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12.5px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+}
+
+.iframe-dialog__textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+.iframe-dialog__preview-card {
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.iframe-dialog__preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 8px 0 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-input);
+  user-select: none;
+}
+
+.iframe-dialog__preview-dots {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.iframe-dialog__preview-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.iframe-dialog__preview-dots i:first-child {
+  background: color-mix(in srgb, var(--danger) 55%, var(--border-strong));
+}
+
+.iframe-dialog__preview-dots i:nth-child(2) {
+  background: color-mix(in srgb, #e0a33a 55%, var(--border-strong));
+}
+
+.iframe-dialog__preview-dots i:nth-child(3) {
+  background: color-mix(in srgb, #3fa66a 55%, var(--border-strong));
+}
+
+.iframe-dialog__preview-host {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iframe-dialog__preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+}
+
+.iframe-dialog__preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.iframe-dialog__preview-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.iframe-dialog__preview-btn svg {
+  flex: none;
+}
+
+.iframe-dialog__preview {
+  flex: none;
+  width: 100%;
+  overflow: hidden;
+  background: #0b0b0b;
+}
+
+.iframe-dialog__preview iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #0b0b0b;
+}
+
+.iframe-dialog__options {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  align-items: start;
+  gap: 16px;
+}
+
+.iframe-dialog__input {
+  width: 100%;
+  height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.iframe-dialog__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.iframe-dialog__input--number {
+  width: 64px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.iframe-dialog__height {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iframe-dialog__range {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.iframe-dialog__height-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+.iframe-dialog__height-value span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.iframe-dialog__switches {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.iframe-dialog__note {
+  max-width: 300px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .iframe-dialog__head-icon {
+    display: none;
+  }
+
+  .iframe-dialog__options {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .iframe-dialog__switches {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .iframe-dialog__note {
+    max-width: none;
+  }
+
+  .iframe-dialog__preview-actions span {
+    display: none;
+  }
+
+  .iframe-dialog__preview-btn {
+    padding: 0 5px;
+  }
+
+  .iframe-toolbar__provider {
+    display: none;
+  }
+
+  .iframe-dialog__preview {
+    max-height: 42vh;
+  }
+}
+
+@media (hover: none) {
+  .iframe-embed__caption {
+    opacity: 1;
+  }
+
+  .iframe-embed__scrollbar {
+    opacity: 1;
+  }
+}
+
+@media (pointer: coarse) {
+  .iframe-embed__scrollbar {
+    right: 2px;
+    width: 12px;
+  }
+
+  .iframe-embed__handle {
+    width: 16px;
+    height: 16px;
+  }
+
+  .iframe-embed__handle--nw {
+    left: -8px;
+    top: -8px;
+  }
+
+  .iframe-embed__handle--ne {
+    right: -8px;
+    top: -8px;
+  }
+
+  .iframe-embed__handle--sw {
+    left: -8px;
+    bottom: -8px;
+  }
+
+  .iframe-embed__handle--se {
+    right: -8px;
+    bottom: -8px;
+  }
+
+  .iframe-embed__handle--bottom {
+    bottom: -8px;
+    margin-left: -8px;
+  }
+}

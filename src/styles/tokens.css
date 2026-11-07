@@ -1,0 +1,184 @@
+/* ------------------------------------------------------------------ *
+ * Design tokens — tuned to match the Notion desktop/web application.  *
+ * ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+
+  /* Typography */
+  --font-ui: 'Inter var', Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', 'Helvetica Neue', Helvetica, 'Apple Color Emoji', Arial, sans-serif,
+    'Segoe UI Emoji', 'Segoe UI Symbol';
+  --font-mono: 'SFMono-Regular', ui-monospace, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --font-serif: 'Lyon Text', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+  --text-base: 16px;
+  --text-sm: 14px;
+  --text-xs: 12px;
+
+  /* Surfaces */
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-sidebar: #f7f7f5;
+  --bg-input: rgba(242, 241, 238, 0.6);
+  --bg-code: #f7f6f3;
+  --bg-callout: #f1f1ef;
+  --bg-card: #ffffff;
+  --bg-scrim: rgba(15, 15, 15, 0.35);
+  --bg-tooltip: #1f1f1f;
+
+  /* Text */
+  --text: #37352f;
+  --text-secondary: rgba(55, 53, 47, 0.65);
+  --text-tertiary: rgba(55, 53, 47, 0.45);
+  --text-placeholder: rgba(55, 53, 47, 0.35);
+  --text-inverse: #ffffff;
+  --text-tooltip: rgba(255, 255, 255, 0.92);
+
+  /* Interaction */
+  --hover: rgba(55, 53, 47, 0.06);
+  --hover-strong: rgba(55, 53, 47, 0.09);
+  --active: rgba(55, 53, 47, 0.12);
+  --border: rgba(55, 53, 47, 0.09);
+  --border-strong: rgba(55, 53, 47, 0.16);
+  --accent: #2383e2;
+  --accent-hover: #1b76d6;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(35, 131, 226, 0.12);
+  --danger: #eb5757;
+  --selection: rgba(35, 131, 226, 0.22);
+  --notion-highlight: rgba(255, 212, 0, 0.4);
+
+  /* Inline text colors (theme aware) */
+  --text-color-gray: #787774;
+  --text-color-brown: #9f6b53;
+  --text-color-orange: #d9730d;
+  --text-color-yellow: #cb912f;
+  --text-color-green: #448361;
+  --text-color-blue: #337ea9;
+  --text-color-purple: #9065b0;
+  --text-color-pink: #c14c8a;
+  --text-color-red: #d44c47;
+
+  /* Inline highlight colors */
+  --highlight-gray: #e3e2e0;
+  --highlight-brown: #eee0da;
+  --highlight-orange: #fadec9;
+  --highlight-yellow: #fdecc8;
+  --highlight-green: #dbeddb;
+  --highlight-blue: #d3e5ef;
+  --highlight-purple: #e8deee;
+  --highlight-pink: #f5e0e9;
+  --highlight-red: #ffe2dd;
+
+  /* Editor specifics */
+  --inline-code-bg: rgba(135, 131, 120, 0.15);
+  --inline-code-fg: #eb5757;
+  --code-keyword: #0000ff;
+  --code-string: #a31515;
+  --code-comment: #008000;
+  --code-number: #098658;
+  --code-function: #795e26;
+
+  /* Elevation */
+  --shadow-sm: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.08) 0 2px 4px;
+  --shadow-md: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 3px 6px,
+    rgba(15, 15, 15, 0.18) 0 9px 24px;
+  --shadow-lg: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.14) 0 12px 24px,
+    rgba(15, 15, 15, 0.24) 0 24px 48px;
+
+  /* Geometry */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 999px;
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 0px;
+  --content-w: 708px;
+  --content-pad: 96px;
+  --topbar-h: 45px;
+  --handle-gutter: 72px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.21, 0.54, 0.35, 1);
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1.05);
+  --dur-fast: 90ms;
+  --dur: 160ms;
+  --dur-slow: 250ms;
+
+  /* Z-index scale */
+  --z-drag: 40;
+  --z-sticky: 50;
+  --z-popover: 1000;
+  --z-modal: 1100;
+  --z-tooltip: 1200;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #191919;
+  --bg-elevated: #252525;
+  --bg-sidebar: #202020;
+  --bg-input: rgba(255, 255, 255, 0.055);
+  --bg-code: #242424;
+  --bg-callout: rgba(255, 255, 255, 0.055);
+  --bg-card: #202020;
+  --bg-scrim: rgba(0, 0, 0, 0.6);
+  --bg-tooltip: #f2f2f2;
+
+  --text: rgba(255, 255, 255, 0.81);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --text-placeholder: rgba(255, 255, 255, 0.28);
+  --text-inverse: #191919;
+  --text-tooltip: rgba(25, 25, 25, 0.92);
+
+  --hover: rgba(255, 255, 255, 0.055);
+  --hover-strong: rgba(255, 255, 255, 0.09);
+  --active: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.094);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent: #529cca;
+  --accent-hover: #67aadd;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(82, 156, 202, 0.2);
+  --danger: #ff7369;
+  --selection: rgba(35, 131, 226, 0.32);
+  --notion-highlight: rgba(255, 212, 0, 0.22);
+
+  --text-color-gray: #9a9a97;
+  --text-color-brown: #ba856f;
+  --text-color-orange: #e08a4b;
+  --text-color-yellow: #d4a94f;
+  --text-color-green: #67a980;
+  --text-color-blue: #6ea8cf;
+  --text-color-purple: #b190cf;
+  --text-color-pink: #d488ac;
+  --text-color-red: #e5746f;
+
+  --highlight-gray: rgba(255, 255, 255, 0.14);
+  --highlight-brown: rgba(186, 133, 105, 0.32);
+  --highlight-orange: rgba(217, 115, 13, 0.3);
+  --highlight-yellow: rgba(255, 212, 0, 0.24);
+  --highlight-green: rgba(68, 131, 97, 0.34);
+  --highlight-blue: rgba(51, 126, 169, 0.34);
+  --highlight-purple: rgba(144, 101, 176, 0.34);
+  --highlight-pink: rgba(193, 76, 138, 0.32);
+  --highlight-red: rgba(212, 76, 71, 0.32);
+
+  --inline-code-bg: rgba(255, 255, 255, 0.09);
+  --inline-code-fg: #ff7369;
+  --code-keyword: #c792ea;
+  --code-string: #c3e88d;
+  --code-comment: #6a737d;
+  --code-number: #f78c6c;
+  --code-function: #82aaff;
+
+  --shadow-sm: rgba(15, 15, 15, 0.2) 0 0 0 1px, rgba(15, 15, 15, 0.4) 0 2px 4px;
+  --shadow-md: rgba(15, 15, 15, 0.2) 0 0 0 1px, rgba(15, 15, 15, 0.4) 0 3px 6px,
+    rgba(15, 15, 15, 0.55) 0 9px 24px;
+  --shadow-lg: rgba(15, 15, 15, 0.2) 0 0 0 1px, rgba(15, 15, 15, 0.5) 0 12px 24px,
+    rgba(15, 15, 15, 0.6) 0 24px 48px;
+}
