@@ -84,7 +84,25 @@ export function MyPage() {
 - **Size the parent.** The editor fills its container and scrolls internally, so give the wrapper a height.
 - **Controlled content:** `value` + `onContentChange` keeps the document in sync. External value changes (server loads, undo from your app, etc.) are applied **without remounting**. `content` is still available as initial-only content. Keep `value` stable while typing; don't feed back a debounced stale snapshot.
 - **`documentId` identifies a document.** Changing it remounts the editor. Use `value` rather than a remount when the same document reloads.
-- **Imperative API:** `ref` exposes `getJSON()`, `setContent(content, { emitUpdate })`, `focus('start' | 'end' | 'all' | number)`, `getEditor()` and `isEmpty()`. `setContent` emits `onContentChange` by default; pass `{ emitUpdate: false }` for a silent restore. `onReady(editor)` fires when the editor is ready.
+- **Imperative API:** `ref` exposes `getJSON()`, `getDocument()`, `setContent(content, { emitUpdate })`, `focus('start' | 'end' | 'all' | number)`, `getEditor()` and `isEmpty()`. `setContent` emits `onContentChange` by default; pass `{ emitUpdate: false }` for a silent restore. `onReady(editor)` fires when the editor is ready.
+- **Versioned storage:** persist documents as `{ version, content }` and pass that wrapper through `value`/`content`. `onDocumentChange` emits the current wrapper; `getDocument()` returns it. Older versions are migrated on mount using `CURRENT_CONTENT_VERSION` / `DEFAULT_CONTENT_MIGRATIONS`, and custom `migrations` can be supplied. Raw `JSONContent` is still accepted and treated as current for backwards compatibility.
+
+```tsx
+import {
+  migrateVersionedContent,
+  type VersionedContent,
+} from 'notion-like-editor'
+
+const [document, setDocument] = useState<VersionedContent>(() =>
+  migrateVersionedContent(savedDocument),
+)
+
+<NotionEditor
+  value={document}
+  onDocumentChange={setDocument}
+  // ...
+/>
+```
 - **Image uploads:** with `uploadImage`, images are uploaded and only the returned URL is stored. Uploads are optimistic: a preview appears immediately, with progress, cancel, retry and inline errors. Up to **3 images** prepare/upload at once; the rest wait in a queue. Cancelling immediately frees the slot, even if the host’s uploader ignores `AbortSignal`, and a stalled upload times out after 60 seconds. The editor passes an optimized file: large raster images arrive as **WebP under 200 KB**; images already under 200 KB, SVGs and GIFs arrive as the original file. `context.originalFile` always contains the untouched upload. Use `context.signal` for cancellation and `context.onProgress(0–100)` to report progress. Return a URL or `{ src, width, height, alt }`; return `null` to cancel. Handle failures with `onImageUploadError`.
 - **Uploading images are never persisted.** Preview blob URLs and progress attrs live only in the live editor. `getJSON()` and `onContentChange` return the saved shape, so it is safe to save while an upload is in flight. Replacing an image keeps the old URL persisted until the new upload succeeds.
 - **Without an uploader:** images use the same optimistic placeholder and queue, compressed locally (same 200 KB WebP rule) and embedded as data URLs. Videos and charts store metadata/settings rather than media bytes.

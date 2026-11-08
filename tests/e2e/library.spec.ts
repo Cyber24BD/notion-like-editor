@@ -57,6 +57,23 @@ test('ref setContent updates the controlled document', async ({ page }) => {
   expect(state?.json.content?.[0].content?.[0].text).toBe('Set by ref')
 })
 
+test('legacy versioned content migrates on mount', async ({ page }) => {
+  await page.goto('/harness.html?legacy=1')
+  await expect(page.locator('.notion-editor')).toContainText('Legacy item')
+  await expect(page.locator('.notion-editor ol')).toHaveCount(1)
+  await expect(page.locator('.notion-editor ul')).toHaveCount(0)
+
+  const document = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __harnessDocument?: { version: number }
+        }
+      ).__harnessDocument,
+  )
+  expect(document?.version).toBe(1)
+})
+
 test('failed upload shows inline retry, succeeds, and is undoable', async ({
   page,
 }, testInfo) => {

@@ -2,6 +2,11 @@ import { useRef, useState } from 'react'
 import { NotionEditor, type NotionEditorHandle } from '../components/PageEditor'
 import type { ImageUploadContext } from '../editor/images/imageFiles'
 import type { Editor, JSONContent } from '@tiptap/core'
+import {
+  CURRENT_CONTENT_VERSION,
+  isVersionedContent,
+  type VersionedContent,
+} from '../editor/contentMigration'
 
 const INITIAL: JSONContent = {
   type: 'doc',
@@ -29,6 +34,26 @@ const EXTERNAL: JSONContent = {
     {
       type: 'paragraph',
       content: [{ type: 'text', text: 'No remount happened.' }],
+    },
+  ],
+}
+
+const LEGACY: JSONContent = {
+  type: 'doc',
+  content: [
+    {
+      type: 'numberedList',
+      content: [
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Legacy item' }],
+            },
+          ],
+        },
+      ],
     },
   ],
 }
@@ -79,6 +104,7 @@ interface HarnessState {
 interface HarnessWindow extends Window {
   __harness?: HarnessDebug
   __harnessState?: HarnessState
+  __harnessDocument?: VersionedContent
 }
 
 function debug(): HarnessDebug {
@@ -114,7 +140,11 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
 export function Harness() {
   const [title, setTitle] = useState('Harness document')
-  const [content, setContent] = useState<JSONContent | null>(INITIAL)
+  const [content, setContent] = useState<JSONContent | VersionedContent | null>(
+    new URLSearchParams(window.location.search).has('legacy')
+      ? { version: 0, content: LEGACY }
+      : INITIAL,
+  )
   const [edits, setEdits] = useState(0)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -235,6 +265,12 @@ export function Harness() {
             setContent(next)
             setEdits((value) => value + 1)
           }}
+          onDocumentChange={(document) => {
+            ;(
+              window as unknown as HarnessWindow
+            ).__harnessDocument = document
+            if (document.version === CURRENT_CONTENT_VERSION) setContent(document)
+          }}
           uploadImage={useAdapter ? uploadImage : undefined}
           onImageUploadError={(err) => {
             setError(err instanceof Error ? err.message : 'upload failed')
@@ -245,7 +281,13 @@ export function Harness() {
       </div>
       <footer className="harness__status" data-testid="harness-status">
         Edits: {edits} · Blocks:{' '}
-        {Array.isArray(content?.content) ? content.content.length : 0} · Ready:{' '}
+        {Array.isArray(
+          (isVersionedContent(content) ? content.content : content)?.content,
+        )
+          ? (isVersionedContent(content) ? content.content : content)!.content!
+              .length
+          : 0}{' '}
+        · Ready:{' '}
         {ready ? 'yes' : 'no'} · Mode: {useAdapter ? 'adapter' : 'local'}
         {error ? ` · Error: ${error}` : ''}
       </footer>

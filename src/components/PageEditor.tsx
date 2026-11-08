@@ -34,6 +34,13 @@ import { closeBookmarkDialog } from '../editor/bookmark/dialogStore'
 import { closeMathDialog } from '../editor/math/dialogStore'
 import { closeMermaidDialog } from '../editor/mermaid/dialogStore'
 import { PageNavContext } from '../editor/PageNavContext'
+import {
+  CURRENT_CONTENT_VERSION,
+  isVersionedContent,
+  migrateContent,
+  type ContentMigration,
+  type VersionedContent,
+} from '../editor/contentMigration'
 import type { PageReference } from '../editor/nodes/PageLink'
 import { BlockHandle } from './BlockHandle'
 import { BubbleToolbar } from './BubbleToolbar'
@@ -48,6 +55,24 @@ import { LazyEmojiPicker, preloadFeatureDialogs } from './lazy/LazyWidgets'
 import { TableToolbar } from './TableToolbar'
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
+
+type EditorContentInput = JSONContent | VersionedContent
+
+function resolveContent(
+  input: EditorContentInput | null | undefined,
+  migrations?: Record<number, ContentMigration>,
+): JSONContent {
+  if (!input) return EMPTY_DOC
+  if (isVersionedContent(input)) {
+    return migrateContent(
+      input.content,
+      input.version,
+      CURRENT_CONTENT_VERSION,
+      migrations,
+    )
+  }
+  return input
+}
 
 function createEditorProps(
   getServices: () => ImageServices | null,
@@ -129,6 +154,7 @@ function createEditorProps(
 
 export interface NotionEditorHandle {
   getJSON: () => JSONContent
+  getDocument: () => VersionedContent
   setContent: (
     content: JSONContent | null,
     options?: { emitUpdate?: boolean },
@@ -143,13 +169,16 @@ export interface NotionEditorProps {
   documentId: string
   title?: string
   icon?: string
-  content?: JSONContent | null
+  content?: EditorContentInput | null
   /**
    * Controlled content. When supplied, external changes are applied without
    * remounting the editor. Pair with onContentChange and keep the value stable
-   * while the user types.
+   * while the user types. A VersionedContent wrapper is migrated before load.
    */
-  value?: JSONContent | null
+  value?: EditorContentInput | null
+  /** Custom migration chain keyed by source version. */
+  migrations?: Record<number, ContentMigration>
+  onDocumentChange?: (document: VersionedContent) => void
   onTitleChange?: (title: string) => void
   onIconChange?: (icon: string) => void
   onContentChange?: (content: JSONContent) => void
@@ -177,6 +206,8 @@ function PageEditor({
   icon = '',
   content = null,
   value,
+  migrations,
+  onDocumentChange,
   onTitleChange,
   onIconChange,
   onContentChange,
@@ -197,11 +228,17 @@ function PageEditor({
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
 
   // Freeze the initial document so option churn never resets the editor.
+  const initialInput = value !== undefined ? value : content
   const initialContent = useRef<JSONContent>(
-    (value !== undefined ? value : content) ?? EMPTY_DOC,
+    resolveContent(initialInput, migrations),
+  )
+  const initialVersion = useRef<number | null>(
+    isVersionedContent(initialInput) ? initialInput.version : null,
   )
   const onContentChangeRef = useRef(onContentChange)
   onContentChangeRef.current = onContentChange
+  const onDocumentChangeRef = useRef(onDocumentChange)
+  onDocumentChangeRef.current = onDocumentChange
   const onReadyRef = useRef(onReady)
   onReadyRef.current = onReady
   const skipInitialUpdate = useRef(true)
@@ -228,6 +265,10 @@ function PageEditor({
       const next = stripUploadingImages(current.getJSON())
       lastEmittedContent.current = next
       onContentChangeRef.current?.(next)
+      onDocumentChangeRef.current?.({
+        version: CURRENT_CONTENT_VERSION,
+        content: next,
+      })
     },
     [],
   )
@@ -262,6 +303,22 @@ function PageEditor({
     if (editor) onReadyRef.current?.(editor)
   }, [editor])
 
+  // Persist a migration as soon as a legacy versioned document is mounted.
+  useEffect(() => {
+    if (!editor) return
+    if (
+      initialVersion.current !== null &&
+      initialVersion.current < CURRENT_CONTENT_VERSION
+    ) {
+      const next = stripUploadingImages(editor.getJSON())
+      onContentChangeRef.current?.(next)
+      onDocumentChangeRef.current?.({
+        version: CURRENT_CONTENT_VERSION,
+        content: next,
+      })
+    }
+  }, [editor])
+
   useEffect(() => {
     if (!editor) return
     return () => cleanupImageUploads(editor.view)
@@ -272,18 +329,22 @@ function PageEditor({
   // for consumers that clone the JSON before storing it).
   useEffect(() => {
     if (!editor || value === undefined) return
-    const next = value ?? EMPTY_DOC
+    const next = resolveContent(value, migrations)
     if (next === lastEmittedContent.current) return
     if (JSON.stringify(next) === JSON.stringify(stripUploadingImages(editor.getJSON()))) {
       return
     }
     editor.commands.setContent(next, { emitUpdate: false })
-  }, [editor, value])
+  }, [editor, value, migrations])
 
   useImperativeHandle(
     ref,
     () => ({
       getJSON: () => stripUploadingImages(editor?.getJSON() ?? EMPTY_DOC),
+      getDocument: () => ({
+        version: CURRENT_CONTENT_VERSION,
+        content: stripUploadingImages(editor?.getJSON() ?? EMPTY_DOC),
+      }),
       setContent: (next, options) => {
         if (!editor) return
         editor.commands.setContent(next ?? EMPTY_DOC, {
