@@ -10,6 +10,7 @@ import type { IframeDialog } from '../IframeDialog'
 import type { MathDialog } from '../MathDialog'
 import type { MermaidDialog } from '../MermaidDialog'
 import type { VideoDialog } from '../VideoDialog'
+import type { ResolvedEditorFeatures } from '../../editor/features'
 
 type AudioDialogProps = ComponentProps<typeof AudioDialog>
 type BookmarkDialogProps = ComponentProps<typeof BookmarkDialog>
@@ -154,17 +155,19 @@ export function LazyVideoDialog(props: VideoDialogProps) {
 /**
  * Pull the interaction-only overlays into the browser cache after the editor
  * has settled, so opening them has no visible delay while the initial bundle
- * stays smaller.
+ * stays smaller. Feature-gated dialogs are only preloaded when the mounted
+ * preset can actually open them; core/standard must never download Mermaid or
+ * KaTeX after mount.
  */
-export function preloadFeatureDialogs() {
-  void import('../AudioDialog')
-  void import('../BookmarkDialog')
-  void import('../ChartSettingsDialog')
+export function preloadFeatureDialogs(features: ResolvedEditorFeatures) {
   void import('../ColorPalette')
   void import('../nodes/CropDialog')
   void import('../EmojiPicker')
-  void import('../IframeDialog')
-  void import('../MathDialog')
-  void import('../MermaidDialog')
-  void import('../VideoDialog')
+  if (features.chart) void import('../ChartSettingsDialog')
+  if (features.video) void import('../VideoDialog')
+  if (features.audio) void import('../AudioDialog')
+  if (features.iframe) void import('../IframeDialog')
+  if (features.bookmark) void import('../BookmarkDialog')
+  if (features.math) void import('../MathDialog')
+  if (features.mermaid) void import('../MermaidDialog')
 }

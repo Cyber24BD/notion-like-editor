@@ -307,6 +307,10 @@ function PageEditor({
       content: initialContent.current,
       editable,
       editorProps,
+      // Do not build the ProseMirror view until the host has a DOM. Tiptap
+      // detects this automatically, but setting it explicitly keeps Next.js /
+      // Remix SSR quiet and guarantees the same hydration path in production.
+      immediatelyRender: false,
       onUpdate: handleUpdate,
     },
     [documentId],
@@ -398,7 +402,10 @@ function PageEditor({
   }, [editor])
 
   useEffect(() => {
-    const timer = window.setTimeout(preloadFeatureDialogs, 1500)
+    const timer = window.setTimeout(
+      () => preloadFeatureDialogs(featuresRef.current),
+      1500,
+    )
     return () => {
       window.clearTimeout(timer)
       closeVideoDialog()

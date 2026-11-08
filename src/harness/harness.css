@@ -3,6 +3,16 @@ body {
   font-family: system-ui, sans-serif;
 }
 
+.preset-harness {
+  min-height: 100vh;
+}
+
+.preset-harness__error {
+  margin: 24px;
+  color: #b91c1c;
+  white-space: pre-wrap;
+}
+
 .harness {
   display: flex;
   flex-direction: column;

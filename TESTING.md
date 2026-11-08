@@ -8,8 +8,9 @@ The repo has two layers of automated checks:
 npm run test:unit
 ```
 
-Covers pure logic such as video URL parsing and the upload serialization
-boundary that keeps preview blob URLs out of saved content.
+Covers pure logic such as video URL parsing, the upload serialization boundary
+that keeps preview blob URLs out of saved content, server rendering and safe
+KaTeX output.
 
 ## Browser tests (Playwright)
 
@@ -31,6 +32,8 @@ Playwright starts Vite on port `5199` and uses:
 - `/harness.html` — a small controlled host for the public library API
   (controlled `value`, refs, upload adapter, cancellation, retry, queue, local
   fallback and undo/redo)
+- `/preset-harness.html?preset=…` — direct smoke tests for `core`, `standard`,
+  `core-external` and `standard-external` entries
 
 Useful commands:
 

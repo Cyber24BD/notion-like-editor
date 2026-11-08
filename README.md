@@ -113,18 +113,22 @@ const [document, setDocument] = useState<VersionedContent>(() =>
   - `@cyber24bd/notion-like-editor/standard` — core + code, video, bookmarks, TOC, charts
   - `/external` variants of the above — host supplies Tiptap
   - `style.css`, `core.css`, `standard.css` — matching scoped styles
+- **Tiptap is a peer dependency:** install one Tiptap 3.33+ stack in the host. The `/external` entries import the host's `@tiptap/*` and `prosemirror-*` modules instead of shipping a second copy, which is required for a single ProseMirror schema/selection identity.
 - **Core/standard JS is genuinely smaller:** the preset builds use separate extension factories and CSS entries, not just runtime flags. For example, the external core entry is ~107 KB vs ~359 KB for external full; core CSS is ~53 KB vs ~120 KB full.
 - **Feature presets / custom extensions:** `CORE_FEATURES`, `STANDARD_FEATURES` and `FULL_FEATURES` restrict which optional blocks are registered and shown in the slash menu. Pass `features` and/or `extensions` to `NotionEditor`. These are **mount-time** content capabilities; runtime flags do not tree-shake the bundle, and existing documents containing disabled nodes need migration before mounting.
 - **Optional callbacks:** `onIconChange`, `onNavigatePage` / `onCreateSubPage` for page links.
 - **Presentation props:** `editable`, `showHeader`, `showBubbleToolbar`, `showTableToolbar`, `className`.
 - **Scoped styles:** the library stylesheet is scoped to `.notion-editor-root`; dialogs/toolbars are wrapped in the same scope. It no longer resets your host `body`/`:root`, and generic button/menu/popover/page classes are prefixed with `notion-` so host rules cannot collide. Set `data-theme="dark"` on `<html>` for dark mode, or override the scoped CSS variables.
 - **Math styles:** math blocks use KaTeX. The core stylesheet no longer bundles KaTeX’s font files; if you use math, import `katex/dist/katex.min.css` once in your app. The demo already does this.
-- **Bundle shape:** the scoped library stylesheet is ~119 KB on disk (down from ~1.5 MB with KaTeX fonts). The editor JavaScript is still a single bundled stack (~1.23 MB minified / ~323 KB gzip); feature flags are the next weight lever.
+- **Bundle shape:** the scoped library stylesheet is ~119 KB on disk (down from ~1.5 MB with KaTeX fonts). Bundled full JS is ~1.21 MB minified; the external full entry is ~359 KB, external core ~107 KB and external standard ~319 KB. The preset entries are the weight lever; the default full entry remains a single bundled stack.
+- **Package size:** `build:lib` deduplicates identical lazy chunks shared by the preset/external builds before packing. This keeps the installed package from carrying several copies of Mermaid, KaTeX and dialog code.
 - **Types** are included at `dist-lib/lib/index.d.ts`; the package exports `./style.css`.
 
 The demo app (`src/App.tsx`, `src/store`) is separate from the library entry and is not required by consumers.
 
 **Publishing:** the package is scoped as `@cyber24bd/notion-like-editor` and configured for public npm publication (`npm publish --access public`). Local tarball installs are also supported.
+
+**Security note:** `npm audit` reports two low-severity advisories through Mermaid's internal KaTeX 0.16 dependency. Editor math uses KaTeX 0.19.1 with `trust: false`; Mermaid still pins the older internal copy. Forcing 0.19 into Mermaid would violate its dependency contract, so this is documented rather than overridden. Re-evaluate when Mermaid ships a fixed KaTeX.
 
 ## What's included
 

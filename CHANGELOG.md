@@ -6,6 +6,11 @@
 - Added `core`, `standard`, `full` preset entries with matching CSS.
 - Added external-Tiptap variants for all presets.
 - Preserved the previous full editor as the default `notion-like-editor` behavior.
+- Moved the Tiptap/ProseMirror stack to peer dependencies so external-entry hosts share one schema and selection identity.
+- Set `immediatelyRender: false` and added an SSR smoke test for Next.js/Remix hosts.
+- Added browser coverage for core, standard, core/external and standard/external presets.
+- Deduplicated identical preset/external lazy chunks before packing (tarball ~2.5 MB instead of ~5.6 MB).
+- Upgraded editor KaTeX to 0.19.1; the remaining low advisory is Mermaid's internal KaTeX copy and is documented.
 
 ## 1.1.0
 
