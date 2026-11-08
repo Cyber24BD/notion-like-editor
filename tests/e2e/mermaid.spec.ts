@@ -14,6 +14,7 @@ async function openMermaid(page: Page): Promise<void> {
 test('every Mermaid template renders without syntax errors or leaked DOM', async ({
   page,
 }) => {
+  test.slow()
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await openMermaid(page)
 

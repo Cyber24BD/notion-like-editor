@@ -37,8 +37,11 @@ export function selectBlockRange(editor: Editor, fromPos: number, toPos: number)
   const from = Math.min(a.from, b.from)
   const to = Math.max(a.to, b.to)
   const selection = NodeRangeSelection.create(doc, from, to, 0)
+  // Clear the browser's native shift-click selection before installing the
+  // ProseMirror node range. Doing it afterwards can race with the next
+  // transaction (for example Mod-d) and collapse the node selection.
+  window.getSelection()?.removeAllRanges()
   editor.view.dispatch(editor.state.tr.setSelection(selection))
-  clearNativeSelection()
   return true
 }
 
@@ -130,12 +133,6 @@ export async function copyBlockRange(editor: Editor): Promise<boolean> {
   }
 }
 
-function clearNativeSelection(): void {
-  window.requestAnimationFrame(() => {
-    window.getSelection()?.removeAllRanges()
-  })
-}
-
 /**
  * Adds Notion-style block range selection on top of ProseMirror's tabular
  * NodeRangeSelection. The drag-handle extension already understands this
@@ -208,8 +205,8 @@ export const BlockRange = Extension.create({
                   Math.max(a.to, b.to),
                   0,
                 )
+                window.getSelection()?.removeAllRanges()
                 view.dispatch(view.state.tr.setSelection(selection))
-                clearNativeSelection()
               }
 
               document.addEventListener('mouseup', onUp, { once: true })

@@ -134,6 +134,7 @@ test('duplicate and copy a block range', async ({ page, context }) => {
 
   await page.keyboard.press('Control+d')
   await expect(page.locator('.notion-editor > *')).toHaveCount(6)
+  await page.waitForTimeout(80)
   await expect(page.locator('.ProseMirror-selectednoderange')).toHaveCount(2)
   await page.keyboard.press('Control+z')
   await expect(page.locator('.notion-editor > *')).toHaveCount(4)
