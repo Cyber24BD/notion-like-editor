@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import { X } from './Icons'
 
 export type ColorPaletteKind = 'text' | 'highlight'
@@ -148,7 +148,7 @@ export function ColorPalette({
 
   const keepSelection = (event: ReactMouseEvent) => event.preventDefault()
 
-  return createPortal(
+  return createNotionPortal(
     <div
       ref={containerRef}
       className="color-palette popover"
@@ -240,7 +240,5 @@ export function ColorPalette({
           aria-label="Choose a custom color"
         />
       </label>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

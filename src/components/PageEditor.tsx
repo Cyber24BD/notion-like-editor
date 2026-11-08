@@ -431,7 +431,8 @@ function PageEditor({
   }
 
   return (
-    <div className={`page ${className}`.trim()}>
+    <div className="notion-editor-root">
+      <div className={`page ${className}`.trim()}>
       <div
         className="page-scroll notion-scroll"
         ref={setScrollEl}
@@ -526,6 +527,7 @@ function PageEditor({
       <BookmarkDialogHost />
       <MathDialogHost />
       <MermaidDialogHost />
+      </div>
     </div>
   )
 })

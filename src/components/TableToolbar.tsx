@@ -6,7 +6,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import { isInTable, selectedRect } from '@tiptap/pm/tables'
@@ -229,7 +229,7 @@ export function TableToolbar({ editor }: TableToolbarProps) {
         ? columnEntries
         : headerEntries
 
-  return createPortal(
+  return createNotionPortal(
     <>
       <div
         ref={toolbarRef}
@@ -324,7 +324,5 @@ export function TableToolbar({ editor }: TableToolbarProps) {
           onClose={() => setMenu(null)}
         />
       )}
-    </>,
-    document.body,
-  )
+    </>)
 }

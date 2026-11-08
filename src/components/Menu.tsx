@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 
 export interface MenuEntry {
   id: string
@@ -65,7 +65,7 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
     }
   }, [onClose])
 
-  return createPortal(
+  return createNotionPortal(
     <div
       ref={ref}
       className="menu popover"
@@ -97,7 +97,5 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
           </button>
         ),
       )}
-    </div>,
-    document.body,
-  )
+    </div>)
 }

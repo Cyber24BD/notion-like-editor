@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import { slashMenu } from '../editor/slash/menuStore'
 import type { SlashItem } from '../editor/slash/types'
 
@@ -122,7 +122,7 @@ export function SlashMenu() {
 
   const { top, left } = computePosition(state.rect)
 
-  return createPortal(
+  return createNotionPortal(
     <div
       ref={menuRef}
       className="slash-menu popover"
@@ -181,7 +181,5 @@ export function SlashMenu() {
           <span>Click a block to insert it · esc to close</span>
         )}
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

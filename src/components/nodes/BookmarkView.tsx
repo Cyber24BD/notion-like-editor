@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from '../NotionPortal'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import {
   fetchBookmarkMetadata,
@@ -149,7 +149,7 @@ export function BookmarkView({
 
   const toolbar =
     selected && !settingsOpen && toolbarAt
-      ? createPortal(
+      ? createNotionPortal(
           <div
             className="image-toolbar bookmark-toolbar popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
@@ -255,9 +255,7 @@ export function BookmarkView({
             >
               <Trash size={15} />
             </button>
-          </div>,
-          document.body,
-        )
+          </div>)
       : null
 
   return (

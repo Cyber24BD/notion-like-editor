@@ -7,7 +7,7 @@ import {
   type ClipboardEvent as ReactClipboardEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import {
   defaultBookmarkAttrs,
   fallbackBookmarkMetadata,
@@ -214,7 +214,7 @@ export function BookmarkDialog({
     onClose()
   }
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="video-dialog-scrim"
       onPointerDown={(event) => {
@@ -397,7 +397,5 @@ export function BookmarkDialog({
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

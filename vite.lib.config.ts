@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+// @ts-expect-error — plain JS PostCSS plugin
+import scopeCss from './scripts/scope-css.mjs'
 
 export default defineConfig({
   plugins: [react()],
@@ -33,6 +35,11 @@ export default defineConfig({
       },
       { find: '@', replacement: '/src' },
     ],
+  },
+  css: {
+    postcss: {
+      plugins: [scopeCss('.notion-editor-root')],
+    },
   },
   build: {
     outDir: 'dist-lib',

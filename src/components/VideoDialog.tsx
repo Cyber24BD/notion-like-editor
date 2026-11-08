@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import {
   buildVideoEmbedUrl,
   defaultVideoAttrs,
@@ -115,7 +115,7 @@ export function VideoDialog({
     }
   }
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="video-dialog-scrim"
       onPointerDown={(event) => {
@@ -308,7 +308,5 @@ export function VideoDialog({
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

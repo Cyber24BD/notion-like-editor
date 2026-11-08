@@ -1040,13 +1040,13 @@ kbd {
  * ------------------------------------------------------------------ */
 
 @media (max-width: 1100px) {
-  :root {
+  .notion-editor-root {
     --content-pad: 60px;
   }
 }
 
 @media (max-width: 900px) {
-  :root {
+  .notion-editor-root {
     --content-pad: 32px;
   }
 
@@ -1064,7 +1064,7 @@ kbd {
 }
 
 @media (max-width: 640px) {
-  :root {
+  .notion-editor-root {
     --content-pad: 18px;
   }
 

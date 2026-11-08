@@ -108,7 +108,9 @@ const [document, setDocument] = useState<VersionedContent>(() =>
 - **Without an uploader:** images use the same optimistic placeholder and queue, compressed locally (same 200 KB WebP rule) and embedded as data URLs. Videos and charts store metadata/settings rather than media bytes.
 - **Optional callbacks:** `onIconChange`, `onNavigatePage` / `onCreateSubPage` for page links.
 - **Presentation props:** `editable`, `showHeader`, `showBubbleToolbar`, `showTableToolbar`, `className`.
-- **Theming:** the stylesheet includes Notion design tokens, base typography and scrollbars. Set `data-theme="dark"` on `<html>` for dark mode, or override the CSS variables.
+- **Scoped styles:** the library stylesheet is scoped to `.notion-editor-root`; dialogs/toolbars are wrapped in the same scope. It no longer resets your host `body`, `:root` or generic `.btn`/`.menu`/`.popover` rules. Set `data-theme="dark"` on `<html>` for dark mode, or override the scoped CSS variables.
+- **Math styles:** math blocks use KaTeX. The core stylesheet no longer bundles KaTeX’s font files; if you use math, import `katex/dist/katex.min.css` once in your app. The demo already does this.
+- **Bundle shape:** the scoped library stylesheet is ~119 KB on disk (down from ~1.5 MB with KaTeX fonts). The editor JavaScript is still a single bundled stack (~1.23 MB minified / ~323 KB gzip); feature flags are the next weight lever.
 - **Types** are included at `dist-lib/lib/index.d.ts`; the package exports `./style.css`.
 
 The demo app (`src/App.tsx`, `src/store`) is separate from the library entry and is not required by consumers.

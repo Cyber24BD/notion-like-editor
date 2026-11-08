@@ -5,7 +5,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from '../NotionPortal'
 import { cropImageSource, type ImageServices } from '../../editor/images/imageFiles'
 import { X } from '../Icons'
 
@@ -180,7 +180,7 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
     onClose()
   }, [crop, onApply, onClose, services, src])
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="crop-scrim"
       onPointerDown={(event) => {
@@ -295,7 +295,5 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

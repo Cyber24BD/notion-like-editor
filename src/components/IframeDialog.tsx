@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import {
   clampIframeHeight,
   defaultIframeAttrs,
@@ -125,7 +125,7 @@ export function IframeDialog({
       .catch(() => undefined)
   }
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="video-dialog-scrim"
       onPointerDown={(event) => {
@@ -354,7 +354,5 @@ export function IframeDialog({
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

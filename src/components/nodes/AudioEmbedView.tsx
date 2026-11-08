@@ -7,7 +7,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from '../NotionPortal'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import {
   buildAudioEmbedUrl,
@@ -223,7 +223,7 @@ export function AudioEmbedView({
 
   const toolbar =
     selected && !settingsOpen && toolbarAt
-      ? createPortal(
+      ? createNotionPortal(
           <div
             className="image-toolbar audio-toolbar popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
@@ -339,9 +339,7 @@ export function AudioEmbedView({
             >
               <Trash size={15} />
             </button>
-          </div>,
-          document.body,
-        )
+          </div>)
       : null
 
   return (

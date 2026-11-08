@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import katex from 'katex'
 import {
   MATH_SYMBOLS,
@@ -136,7 +136,7 @@ export function MathDialog({
       trust: false,
     })
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="video-dialog-scrim"
       onPointerDown={(event) => {
@@ -319,7 +319,5 @@ export function MathDialog({
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

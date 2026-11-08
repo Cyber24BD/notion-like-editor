@@ -7,7 +7,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import {
   AspectRatio,
   Check,
@@ -451,7 +451,7 @@ export function ImageLightbox({
   const canFullscreen = Boolean(document.fullscreenEnabled)
   const hasMultiple = images.length > 1
 
-  return createPortal(
+  return createNotionPortal(
     <div
       ref={overlayRef}
       className="lightbox"
@@ -697,7 +697,5 @@ export function ImageLightbox({
           Scroll to zoom · Drag to pan · Double-click to toggle · Esc to close
         </div>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }

@@ -7,7 +7,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from '../NotionPortal'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { pickImageFileRaw } from '../../editor/images/imageFiles'
@@ -230,7 +230,7 @@ export function ImageBlockView({
 
   const toolbar =
     selected && !cropOpen && !hasUpload && toolbarAt
-      ? createPortal(
+      ? createNotionPortal(
           <div
             className="image-toolbar popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
@@ -335,9 +335,7 @@ export function ImageBlockView({
             >
               <Trash size={15} />
             </button>
-          </div>,
-          document.body,
-        )
+          </div>)
       : null
 
   const styleMenu = styleMenuAt ? (

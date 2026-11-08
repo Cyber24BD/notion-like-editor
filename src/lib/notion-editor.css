@@ -1,6 +1,6 @@
 /* Public stylesheet for the embeddable editor. */
-@import '../styles/tokens.css';
-@import '../styles/global.css';
+@import './tokens.css';
+@import './base.css';
 @import '../styles/editor.css';
 @import '../styles/image.css';
 @import '../styles/lightbox.css';

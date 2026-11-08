@@ -8,7 +8,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from '../NotionPortal'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { ChartSvg } from '../ChartSvg'
 import { LazyChartSettingsDialog } from '../lazy/LazyWidgets'
@@ -217,7 +217,7 @@ export function ChartView({
 
   const toolbar =
     selected && !settingsOpen && toolbarAt
-      ? createPortal(
+      ? createNotionPortal(
           <div
             className="image-toolbar chart-toolbar popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
@@ -282,9 +282,7 @@ export function ChartView({
             >
               <Trash size={15} />
             </button>
-          </div>,
-          document.body,
-        )
+          </div>)
       : null
 
   return (

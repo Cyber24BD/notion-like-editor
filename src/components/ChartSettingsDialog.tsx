@@ -4,7 +4,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { createPortal } from 'react-dom'
+import { createNotionPortal } from './NotionPortal'
 import { ChartSvg } from './ChartSvg'
 import {
   CHART_KINDS,
@@ -170,7 +170,7 @@ export function ChartSettingsDialog({
     onClose()
   }
 
-  return createPortal(
+  return createNotionPortal(
     <div
       className="chart-dialog-scrim"
       onPointerDown={(event) => {
@@ -458,7 +458,5 @@ export function ChartSettingsDialog({
           </div>
         </footer>
       </div>
-    </div>,
-    document.body,
-  )
+    </div>)
 }
