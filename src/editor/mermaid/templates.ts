@@ -203,11 +203,8 @@ C,D,2`,
     code: `radar-beta
   title Skills
   axis Design, Development, Testing, Deployment
-  curve Team
-    Design: 80
-    Development: 90
-    Testing: 70
-    Deployment: 60`,
+  curve Team{80, 90, 70, 60}
+  max 100`,
   },
   {
     label: 'Treemap',

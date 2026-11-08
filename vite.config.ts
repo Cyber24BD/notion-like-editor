@@ -34,6 +34,11 @@ export default defineConfig({
               priority: 50,
             },
             {
+              name: 'zenuml-vendor',
+              test: /node_modules[\/](@zenuml|@mermaid-js[\/]mermaid-zenuml)[\/]/,
+              priority: 55,
+            },
+            {
               name: 'mermaid-vendor',
               test: /node_modules[\/](mermaid|@mermaid-js|@braintree|@iconify|@upsetjs|cytoscape|cytoscape-cose-bilkent|cytoscape-fcose|d3|d3-sankey|dagre-d3-es|dayjs|dompurify|es-toolkit|fastdom|khroma|marked|roughjs|stylis|ts-dedent|uuid)[\/]/,
               priority: 40,

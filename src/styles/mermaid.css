@@ -40,7 +40,11 @@
   padding: 8px;
   overflow: auto;
   border-radius: 6px;
-  background: var(--bg);
+  background: #ffffff;
+}
+
+.mermaid-block[data-theme='dark'] .mermaid-block__content {
+  background: #1e1e1e;
 }
 
 .mermaid-block__svg {
@@ -49,9 +53,23 @@
   width: 100%;
 }
 
-.mermaid-block__svg svg {
+.mermaid-block__svg > div,
+.mermaid-dialog__preview > div {
+  width: 100%;
+}
+
+.mermaid-block__svg svg,
+.mermaid-dialog__preview svg {
+  width: 100%;
   max-width: 100%;
   height: auto;
+}
+
+/* Mermaid measures edge-label widths before webfonts settle. Never clip the
+ * last glyph of short labels such as "No". */
+.mermaid-block__svg foreignObject,
+.mermaid-dialog__preview foreignObject {
+  overflow: visible;
 }
 
 .mermaid-block__placeholder {
@@ -272,17 +290,17 @@
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  background: #ffffff;
+}
+
+.mermaid-dialog__preview[data-theme='dark'] {
+  background: #1e1e1e;
 }
 
 .mermaid-dialog__preview[data-error='true'] {
   border-color: var(--danger);
 }
 
-.mermaid-dialog__preview svg {
-  max-width: 100%;
-  height: auto;
-}
 
 .mermaid-dialog__preview-empty {
   color: var(--text-tertiary);

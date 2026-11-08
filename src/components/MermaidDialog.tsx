@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
 import {
+  formatMermaidError,
   mermaidLiveUrl,
   renderMermaid,
 } from '../editor/mermaid/render'
@@ -53,7 +54,7 @@ export function MermaidDialog({
   const [copied, setCopied] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const canSubmit = code.trim().length > 0 && !error
+  const canSubmit = code.trim().length > 0 && !error && !loading
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -96,25 +97,24 @@ export function MermaidDialog({
 
     setLoading(true)
     setError('')
-    void renderMermaid(code, theme)
-      .then((nextSvg) => {
-        if (cancelled) return
-        setSvg(nextSvg)
-        setLoading(false)
-      })
-      .catch((renderError) => {
-        if (cancelled) return
-        setSvg('')
-        setError(
-          renderError instanceof Error
-            ? renderError.message
-            : 'Could not render this diagram.',
-        )
-        setLoading(false)
-      })
+    const timer = window.setTimeout(() => {
+      void renderMermaid(code, theme)
+        .then((nextSvg) => {
+          if (cancelled) return
+          setSvg(nextSvg)
+          setLoading(false)
+        })
+        .catch((renderError) => {
+          if (cancelled) return
+          setSvg('')
+          setError(formatMermaidError(renderError))
+          setLoading(false)
+        })
+    }, 220)
 
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
   }, [code, theme])
 

@@ -36,6 +36,8 @@ Playwright starts Vite on port `5199` and uses:
   `core-external` and `standard-external` entries
 - Page cover, find/replace, shortcuts, mobile toolbars and sidebar drag/reorder
   are covered in `tests/e2e/p2.spec.ts`
+- All 23 Mermaid templates, invalid syntax cleanup and dark Mermaid surfaces are
+  covered in `tests/e2e/mermaid.spec.ts`
 
 Useful commands:
 

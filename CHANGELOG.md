@@ -16,6 +16,8 @@
 - Added in-page find/replace with match highlighting and replace-all.
 - Added a complete keyboard shortcuts dialog and shortcut documentation.
 - Polished image/table toolbars on narrow screens with a fixed bottom action bar.
+- Fixed Mermaid layout under reduced-motion preferences, responsive SVG sizing, edge-label clipping and dark surfaces.
+- Fixed the Radar template, added the optional ZenUML plugin, suppressed/cleaned Mermaid error SVGs, and added a complete Mermaid template test suite.
 
 ## 1.1.0
 

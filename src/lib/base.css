@@ -320,9 +320,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .notion-editor-root,
+  .notion-editor-root *,
+  .notion-editor-root *::before,
+  .notion-editor-root *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

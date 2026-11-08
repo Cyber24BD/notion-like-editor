@@ -7,6 +7,7 @@ import {
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import {
   downloadSvg,
+  formatMermaidError,
   mermaidLiveUrl,
   renderMermaid,
   svgDataUrl,
@@ -64,25 +65,24 @@ export function MermaidView({
 
     setLoading(true)
     setError('')
-    void renderMermaid(code, theme)
-      .then((nextSvg) => {
-        if (cancelled) return
-        setSvg(nextSvg)
-        setLoading(false)
-      })
-      .catch((renderError) => {
-        if (cancelled) return
-        setSvg('')
-        setError(
-          renderError instanceof Error
-            ? renderError.message
-            : 'Could not render this diagram.',
-        )
-        setLoading(false)
-      })
+    const timer = window.setTimeout(() => {
+      void renderMermaid(code, theme)
+        .then((nextSvg) => {
+          if (cancelled) return
+          setSvg(nextSvg)
+          setLoading(false)
+        })
+        .catch((renderError) => {
+          if (cancelled) return
+          setSvg('')
+          setError(formatMermaidError(renderError))
+          setLoading(false)
+        })
+    }, 220)
 
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
   }, [code, empty, theme])
 
