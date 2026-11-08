@@ -13,6 +13,7 @@ import {
 export const SKIP_CONTENT_META = 'notion:skip-content-change'
 
 const MAX_CONCURRENT_UPLOADS = 3
+const UPLOAD_TIMEOUT_MS = 60_000
 
 const CLEAR_UPLOAD = {
   uploadId: null,
@@ -269,6 +270,9 @@ export function cancelImageUpload(view: EditorView, id: string): void {
   task.cancelled = true
   task.controller?.abort()
   tasks.delete(id)
+  // Release the queue slot immediately. A host uploader that ignores the abort
+  // signal must not be able to stall every later upload.
+  activeFor(view).delete(id)
 
   const pos = findUploadPos(view, id)
   if (pos !== null) {
@@ -357,26 +361,45 @@ async function runUpload(task: UploadTask): Promise<void> {
     const controller = new AbortController()
     task.controller = controller
     let lastProgress = -1
+    let timeoutId = 0
 
-    const uploaded = await task.uploader(prepared.file, {
-      originalFile: task.originalFile,
-      width: prepared.width,
-      height: prepared.height,
-      alt: prepared.alt,
-      signal: controller.signal,
-      onProgress: (value) => {
-        if (task.cancelled) return
-        const progress = Math.max(0, Math.min(100, Math.round(Number(value) || 0)))
-        if (progress === lastProgress) return
-        lastProgress = progress
-        updateUploadNode(
-          view,
-          task.id,
-          { uploadState: 'uploading', uploadProgress: progress },
-          true,
-        )
-      },
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = window.setTimeout(() => {
+        controller.abort()
+        reject(new Error('Image upload timed out. Please try again.'))
+      }, UPLOAD_TIMEOUT_MS)
     })
+
+    let uploaded
+    try {
+      uploaded = await Promise.race([
+        task.uploader(prepared.file, {
+          originalFile: task.originalFile,
+          width: prepared.width,
+          height: prepared.height,
+          alt: prepared.alt,
+          signal: controller.signal,
+          onProgress: (value) => {
+            if (task.cancelled) return
+            const progress = Math.max(
+              0,
+              Math.min(100, Math.round(Number(value) || 0)),
+            )
+            if (progress === lastProgress) return
+            lastProgress = progress
+            updateUploadNode(
+              view,
+              task.id,
+              { uploadState: 'uploading', uploadProgress: progress },
+              true,
+            )
+          },
+        }),
+        timeout,
+      ])
+    } finally {
+      window.clearTimeout(timeoutId)
+    }
 
     if (task.cancelled || view.isDestroyed) return
     if (uploaded == null) {

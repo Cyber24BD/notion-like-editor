@@ -152,6 +152,38 @@ test('cancel removes the placeholder and aborts the upload', async ({
   expect(uploads.length).toBeLessThanOrEqual(1)
 })
 
+test('cancel frees a queue slot when the adapter ignores abort', async ({
+  page,
+}, testInfo) => {
+  const file = await makeJpeg(page, testInfo, 'small')
+  await page.getByRole('button', { name: 'Hang next 2 uploads' }).click()
+  await dropImages(page, file, 4)
+
+  await expect(page.locator('.image-block')).toHaveCount(4, {
+    timeout: 10_000,
+  })
+  await page.waitForTimeout(150)
+
+  // The first two uploads never settle; cancelling them must release their
+  // slots so the queued images can still finish.
+  await page
+    .locator('.image-upload-overlay')
+    .first()
+    .getByRole('button', { name: 'Cancel' })
+    .click()
+  await page.waitForTimeout(150)
+  await page
+    .locator('.image-upload-overlay')
+    .first()
+    .getByRole('button', { name: 'Cancel' })
+    .click()
+
+  await expect(page.locator('.image-upload-overlay')).toHaveCount(0, {
+    timeout: 30_000,
+  })
+  await expect(page.locator('.image-block')).toHaveCount(2)
+})
+
 test('image queue runs at most three jobs at once', async ({
   page,
 }, testInfo) => {

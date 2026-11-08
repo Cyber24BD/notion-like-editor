@@ -121,9 +121,14 @@ export function Harness() {
   const [useAdapter, setUseAdapter] = useState(true)
   const editorRef = useRef<NotionEditorHandle>(null)
   const failNext = useRef(false)
+  const hangLeft = useRef(0)
 
   const uploadImage = async (file: File, context: ImageUploadContext) => {
     setError(null)
+    if (hangLeft.current > 0) {
+      hangLeft.current -= 1
+      return new Promise<never>(() => undefined)
+    }
     const fail = failNext.current
     failNext.current = false
     const stats = debug()
@@ -205,6 +210,14 @@ export function Harness() {
           }}
         >
           Fail next upload
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            hangLeft.current = 2
+          }}
+        >
+          Hang next 2 uploads
         </button>
         <button type="button" onClick={() => setUseAdapter((value) => !value)}>
           {useAdapter ? 'Use local storage' : 'Use upload adapter'}
