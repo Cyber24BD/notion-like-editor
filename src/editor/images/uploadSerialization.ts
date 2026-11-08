@@ -16,12 +16,23 @@ function withoutUploadAttrs(
   return next
 }
 
+function hasTransientUploadAttrs(
+  attrs: Record<string, unknown> | undefined,
+): boolean {
+  return Boolean(
+    attrs && TRANSIENT_UPLOAD_ATTRS.some((key) => Object.hasOwn(attrs, key)),
+  )
+}
+
 function stripNode(node: JSONContent): JSONContent | null {
-  if (node.type === 'image' && node.attrs?.uploadState) {
-    // While replacing an existing image, keep the persisted old source. For a
-    // brand-new upload there is no source yet, so the whole node is transient.
-    if (!node.attrs.src) return null
-    return { ...node, attrs: withoutUploadAttrs(node.attrs) }
+  if (node.type === 'image') {
+    // A brand-new upload has no persisted source. While replacing an existing
+    // image, keep the old source until the new upload succeeds.
+    if (node.attrs?.uploadState && !node.attrs.src) return null
+    if (hasTransientUploadAttrs(node.attrs)) {
+      return { ...node, attrs: withoutUploadAttrs(node.attrs) }
+    }
+    return node
   }
 
   if (!node.content) return node

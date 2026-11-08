@@ -1,0 +1,43 @@
+# Testing
+
+The repo has two layers of automated checks:
+
+## Unit tests (Vitest)
+
+```bash
+npm run test:unit
+```
+
+Covers pure logic such as video URL parsing and the upload serialization
+boundary that keeps preview blob URLs out of saved content.
+
+## Browser tests (Playwright)
+
+Install Chromium once:
+
+```bash
+npx playwright install chromium
+```
+
+Then:
+
+```bash
+npm run test:e2e
+```
+
+Playwright starts Vite on port `5199` and uses:
+
+- `/` — the demo app (navigation and chart smoke tests)
+- `/harness.html` — a small controlled host for the public library API
+  (controlled `value`, refs, upload adapter, cancellation, retry, queue, local
+  fallback and undo/redo)
+
+Useful commands:
+
+```bash
+npm run test          # unit + e2e
+npm run test:e2e:ui   # interactive Playwright mode
+```
+
+CI runs typecheck, unit tests, browser tests, the app build and the library
+build on every push to `main` and on pull requests (`.github/workflows/ci.yml`).

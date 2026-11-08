@@ -6,6 +6,8 @@ Everything is local — pages are stored in `localStorage`, there is no backend 
 
 Repository: [github.com/Cyber24BD/notion-like-editor](https://github.com/Cyber24BD/notion-like-editor)
 
+[![CI](https://github.com/Cyber24BD/notion-like-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Cyber24BD/notion-like-editor/actions/workflows/ci.yml)
+
 ## Run the demo
 
 ```bash
@@ -14,6 +16,17 @@ npm run dev      # http://localhost:5173
 npm run build    # type-check + production build into dist/
 npm run preview  # serve the production build
 ```
+
+## Test
+
+```bash
+npm run test:unit              # Vitest
+npx playwright install chromium # first time only
+npm run test:e2e               # Playwright
+npm run test                   # both
+```
+
+Playwright uses the demo at `/` and a controlled library harness at `/harness.html`. See [TESTING.md](./TESTING.md) for details. CI runs typecheck, unit tests, browser tests, the app build and the library build.
 
 ## Use it in another React project
 

@@ -8,5 +8,10 @@
     "outDir": "dist-lib"
   },
   "include": ["src"],
-  "exclude": ["src/App.tsx", "src/main.tsx"]
+  "exclude": [
+    "src/App.tsx",
+    "src/main.tsx",
+    "src/harness",
+    "src/**/*.test.ts"
+  ]
 }

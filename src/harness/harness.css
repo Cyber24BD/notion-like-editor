@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+.harness {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.harness__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  background: #111827;
+  color: #fff;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.harness__bar strong {
+  color: #93c5fd;
+}
+
+.harness__bar button {
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #fff;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.harness__bar button:hover {
+  background: #374151;
+}
+
+.harness__editor {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.harness__status {
+  padding: 7px 14px;
+  border-top: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 12px;
+}
