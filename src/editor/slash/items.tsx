@@ -167,6 +167,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'code',
+    feature: 'codeBlock',
     title: 'Code',
     subtitle: 'Capture a code snippet.',
     group: 'Basic blocks',
@@ -215,6 +216,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'chart',
+    feature: 'chart',
     title: 'Chart',
     subtitle: 'Bar, line, area, pie or donut with editable data.',
     group: 'Media',
@@ -228,6 +230,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'video',
+    feature: 'video',
     title: 'Video',
     subtitle: 'Embed YouTube, Vimeo, Loom or a video file.',
     group: 'Media',
@@ -242,6 +245,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'audio',
+    feature: 'audio',
     title: 'Audio',
     subtitle: 'Embed Spotify, SoundCloud, Apple Podcasts or an audio file.',
     group: 'Media',
@@ -275,6 +279,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'iframe',
+    feature: 'iframe',
     title: 'Iframe',
     subtitle: 'Embed a website, map, form or widget.',
     group: 'Media',
@@ -301,6 +306,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'bookmark',
+    feature: 'bookmark',
     title: 'Bookmark',
     subtitle: 'Create a link preview card with title and description.',
     group: 'Media',
@@ -324,6 +330,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'math',
+    feature: 'math',
     title: 'Math',
     subtitle: 'Insert an inline or block LaTeX equation.',
     group: 'Advanced',
@@ -361,6 +368,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'mermaid',
+    feature: 'mermaid',
     title: 'Mermaid',
     subtitle: 'Create flowcharts, sequence diagrams, Gantt charts and more.',
     group: 'Advanced',
@@ -399,6 +407,7 @@ export const slashItems: SlashItem[] = [
   },
   {
     id: 'table-of-contents',
+    feature: 'toc',
     title: 'Table of contents',
     subtitle: 'Jump to headings on this page.',
     group: 'Advanced',

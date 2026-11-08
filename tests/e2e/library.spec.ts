@@ -74,6 +74,27 @@ test('legacy versioned content migrates on mount', async ({ page }) => {
   expect(document?.version).toBe(1)
 })
 
+test('feature flags remove disabled blocks from the slash menu', async ({
+  page,
+}) => {
+  await page.goto('/harness.html?core=1')
+  await expect(page.locator('.notion-editor')).toBeVisible()
+
+  await page.locator('.notion-editor p').last().click()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('/')
+  await expect(page.locator('.slash-menu')).toBeVisible()
+
+  const titles = await page.locator('.slash-menu__title').allInnerTexts()
+  expect(titles).toContain('Image')
+  expect(titles).toContain('Table')
+  expect(titles).not.toContain('Chart')
+  expect(titles).not.toContain('Video')
+  expect(titles).not.toContain('Mermaid')
+  expect(titles).not.toContain('Math')
+})
+
 test('shift-click selects a block range and delete is one undo step', async ({
   page,
 }) => {

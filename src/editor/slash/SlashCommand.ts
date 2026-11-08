@@ -7,8 +7,16 @@ import { filterSlashItems, type SlashItem } from './types'
 
 export const slashPluginKey = new PluginKey('slashCommand')
 
-export const SlashCommand = Extension.create({
+export interface SlashCommandOptions {
+  items: SlashItem[]
+}
+
+export const SlashCommand = Extension.create<SlashCommandOptions>({
   name: 'slashCommand',
+
+  addOptions() {
+    return { items: slashItems }
+  },
 
   addProseMirrorPlugins() {
     return [
@@ -27,7 +35,8 @@ export const SlashCommand = Extension.create({
         // moved next to an existing slash (e.g. clicking a cell containing "/").
         shouldShow: ({ transaction }) =>
           slashMenu.getSnapshot().open || transaction.docChanged,
-        items: ({ query }) => filterSlashItems(slashItems, query).slice(0, 40),
+        items: ({ query }) =>
+          filterSlashItems(this.options.items, query).slice(0, 40),
         command: ({ editor, range, props }) => {
           props.run({ editor, range })
           slashMenu.close()

@@ -23,8 +23,22 @@ import { Mermaid } from './nodes/Mermaid'
 import { Chart } from './nodes/Chart'
 import { BlockRange } from './nodes/BlockRange'
 import { SlashCommand } from './slash/SlashCommand'
+import { slashItems } from './slash/items'
+import { resolveEditorFeatures, type EditorFeatures } from './features'
 
-export function createExtensions(): Extensions {
+export interface CreateExtensionsOptions {
+  features?: EditorFeatures
+  extensions?: Extensions
+}
+
+export function createExtensions(
+  options: CreateExtensionsOptions = {},
+): Extensions {
+  const features = resolveEditorFeatures(options.features)
+  const items = slashItems.filter(
+    (item) => !item.feature || features[item.feature],
+  )
+
   return [
     StarterKit.configure({
       codeBlock: false,
@@ -58,7 +72,7 @@ export function createExtensions(): Extensions {
       },
     }),
     Focus.configure({ className: 'has-focus', mode: 'deepest' }),
-    CodeBlock,
+    ...(features.codeBlock ? [CodeBlock] : []),
     TaskList,
     TaskItem.configure({ nested: true }),
     ImageBlock.configure({ allowBase64: true }),
@@ -77,15 +91,15 @@ export function createExtensions(): Extensions {
     Callout,
     ToggleBlock,
     PageLink,
-    VideoEmbed,
-    AudioEmbed,
-    IframeEmbed,
-    Bookmark,
-    TableOfContents,
-    InlineMath,
-    BlockMath,
-    Mermaid,
-    Chart,
-    SlashCommand,
+    ...(features.video ? [VideoEmbed] : []),
+    ...(features.audio ? [AudioEmbed] : []),
+    ...(features.iframe ? [IframeEmbed] : []),
+    ...(features.bookmark ? [Bookmark] : []),
+    ...(features.toc ? [TableOfContents] : []),
+    ...(features.math ? [InlineMath, BlockMath] : []),
+    ...(features.mermaid ? [Mermaid] : []),
+    ...(features.chart ? [Chart] : []),
+    SlashCommand.configure({ items }),
+    ...(options.extensions ?? []),
   ]
 }

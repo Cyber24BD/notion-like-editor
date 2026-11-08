@@ -1,5 +1,6 @@
 import type { Editor, Range } from '@tiptap/core'
 import type { ReactNode } from 'react'
+import type { EditorFeature } from '../features'
 
 export type SlashGroup = 'Basic blocks' | 'Media' | 'Advanced'
 
@@ -10,6 +11,7 @@ export interface SlashItem {
   group: SlashGroup
   icon: ReactNode
   keywords: string[]
+  feature?: EditorFeature
   run: (context: { editor: Editor; range: Range | null }) => void
 }
 

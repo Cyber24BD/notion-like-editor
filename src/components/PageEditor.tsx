@@ -8,11 +8,17 @@ import {
   useState,
   type MouseEvent,
 } from 'react'
-import type { Editor, JSONContent } from '@tiptap/core'
+import type { Editor, Extensions, JSONContent } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
 import type { EditorProps } from '@tiptap/pm/view'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { createExtensions } from '../editor/createExtensions'
+import {
+  featureKey,
+  resolveEditorFeatures,
+  type EditorFeatures,
+  type ResolvedEditorFeatures,
+} from '../editor/features'
 import {
   imageFilesFromTransfer,
   type ImageServices,
@@ -76,6 +82,7 @@ function resolveContent(
 
 function createEditorProps(
   getServices: () => ImageServices | null,
+  getFeatures: () => ResolvedEditorFeatures,
 ): EditorProps {
   return {
     attributes: {
@@ -111,7 +118,10 @@ function createEditorProps(
       }
 
       // Paste a recognized video link / iframe on an empty line -> real embed.
-      const video = parseVideoFromTransfer(event.clipboardData)
+      const features = getFeatures()
+      const video = features.video
+        ? parseVideoFromTransfer(event.clipboardData)
+        : null
       if (video) {
         const { $from } = view.state.selection
         const nodeType = view.state.schema.nodes.videoEmbed
@@ -130,7 +140,9 @@ function createEditorProps(
       }
 
       // Paste a recognized audio link / iframe on an empty line -> real embed.
-      const audio = parseAudioFromTransfer(event.clipboardData)
+      const audio = features.audio
+        ? parseAudioFromTransfer(event.clipboardData)
+        : null
       if (audio) {
         const { $from } = view.state.selection
         const nodeType = view.state.schema.nodes.audioEmbed
@@ -190,6 +202,10 @@ export interface NotionEditorProps {
   showHeader?: boolean
   showBubbleToolbar?: boolean
   showTableToolbar?: boolean
+  /** Mount-time block capabilities. Defaults to all features enabled. */
+  features?: EditorFeatures
+  /** Extra Tiptap extensions appended after the built-in extension set. */
+  extensions?: Extensions
   /**
    * Optional image storage adapter. Receives the optimized file (WebP under
    * 200 KB for large images) and returns a public URL, or null to cancel.
@@ -218,11 +234,21 @@ function PageEditor({
   showHeader = true,
   showBubbleToolbar = true,
   showTableToolbar = true,
+  features,
+  extensions: extraExtensions,
   uploadImage,
   onImageUploadError,
   onReady,
 }, ref) {
-  const extensions = useMemo(() => createExtensions(), [])
+  const featuresKey = featureKey(features)
+  const resolvedFeatures = useMemo(
+    () => resolveEditorFeatures(features),
+    [featuresKey],
+  )
+  const extensions = useMemo(
+    () => createExtensions({ features: resolvedFeatures, extensions: extraExtensions }),
+    [featuresKey, extraExtensions],
+  )
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
@@ -247,8 +273,10 @@ function PageEditor({
   // A WeakMap keyed by the editor lets NodeViews and slash commands see the
   // uploader for this editor without prop drilling or global configuration.
   const servicesRef = useRef<ImageServices | null>(null)
+  const featuresRef = useRef<ResolvedEditorFeatures>(resolvedFeatures)
+  featuresRef.current = resolvedFeatures
   const editorProps = useMemo(
-    () => createEditorProps(() => servicesRef.current),
+    () => createEditorProps(() => servicesRef.current, () => featuresRef.current),
     [],
   )
 
@@ -538,6 +566,12 @@ function PageEditor({
  */
 export const NotionEditor = forwardRef<NotionEditorHandle, NotionEditorProps>(
   function NotionEditor(props, ref) {
-    return <PageEditor key={props.documentId} ref={ref} {...props} />
+    return (
+      <PageEditor
+        key={`${props.documentId}:${featureKey(props.features)}`}
+        ref={ref}
+        {...props}
+      />
+    )
   },
 )

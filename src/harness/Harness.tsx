@@ -7,6 +7,7 @@ import {
   isVersionedContent,
   type VersionedContent,
 } from '../editor/contentMigration'
+import { CORE_FEATURES } from '../editor/features'
 
 const INITIAL: JSONContent = {
   type: 'doc',
@@ -284,6 +285,11 @@ export function Harness() {
             ).__harnessDocument = document
             if (document.version === CURRENT_CONTENT_VERSION) setContent(document)
           }}
+          features={
+            new URLSearchParams(window.location.search).has('core')
+              ? CORE_FEATURES
+              : undefined
+          }
           uploadImage={useAdapter ? uploadImage : undefined}
           onImageUploadError={(err) => {
             setError(err instanceof Error ? err.message : 'upload failed')
