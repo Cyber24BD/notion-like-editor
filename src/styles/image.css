@@ -150,7 +150,7 @@
   gap: 8px;
 }
 
-.image-upload-overlay .btn {
+.image-upload-overlay .notion-btn {
   min-height: 28px;
   padding: 3px 10px;
   border-color: rgba(255, 255, 255, 0.28);
@@ -159,21 +159,21 @@
   font-size: 12px;
 }
 
-.image-upload-overlay .btn:hover:not(:disabled) {
+.image-upload-overlay .notion-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.18);
 }
 
-.image-upload-overlay .btn--primary {
+.image-upload-overlay .notion-btn--primary {
   border-color: #fff;
   background: #fff;
   color: #1f1f1f;
 }
 
-.image-upload-overlay .btn--primary:hover:not(:disabled) {
+.image-upload-overlay .notion-btn--primary:hover:not(:disabled) {
   background: #f1f1f1;
 }
 
-.image-upload-overlay .btn:disabled {
+.image-upload-overlay .notion-btn:disabled {
   opacity: 0.5;
   cursor: default;
 }

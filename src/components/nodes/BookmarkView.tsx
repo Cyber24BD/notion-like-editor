@@ -151,7 +151,7 @@ export function BookmarkView({
     selected && !settingsOpen && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar bookmark-toolbar popover"
+            className="image-toolbar bookmark-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Bookmark options"

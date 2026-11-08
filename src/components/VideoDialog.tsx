@@ -140,7 +140,7 @@ export function VideoDialog({
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             aria-label="Close video dialog"
             onClick={onClose}
           >
@@ -294,12 +294,12 @@ export function VideoDialog({
             Tip: paste a video link directly on an empty line to embed it instantly.
           </span>
           <div className="video-dialog__actions">
-            <button type="button" className="btn" onClick={onClose}>
+            <button type="button" className="notion-btn" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               disabled={!canSubmit}
               onClick={submit}
             >

@@ -125,7 +125,7 @@ export function SlashMenu() {
   return createNotionPortal(
     <div
       ref={menuRef}
-      className="slash-menu popover"
+      className="slash-menu notion-popover"
       style={{ top, left, width: MENU_WIDTH }}
       role="listbox"
       aria-label="Insert block"

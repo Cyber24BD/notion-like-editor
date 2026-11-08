@@ -233,7 +233,7 @@ export function TableToolbar({ editor }: TableToolbarProps) {
     <>
       <div
         ref={toolbarRef}
-        className="table-toolbar popover"
+        className="table-toolbar notion-popover"
         style={{ top: position.top, left: position.left }}
         role="toolbar"
         aria-label="Table options"
@@ -313,7 +313,7 @@ export function TableToolbar({ editor }: TableToolbarProps) {
           width={224}
           entries={entries}
           header={
-            <div className="menu__header">
+            <div className="notion-menu__header">
               {menu.kind === 'row'
                 ? 'Table row'
                 : menu.kind === 'column'

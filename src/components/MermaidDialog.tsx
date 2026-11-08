@@ -173,7 +173,7 @@ export function MermaidDialog({
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             aria-label="Close Mermaid dialog"
             onClick={onClose}
           >
@@ -303,7 +303,7 @@ export function MermaidDialog({
           <div className="video-dialog__actions">
             <button
               type="button"
-              className="btn mermaid-dialog__copy"
+              className="notion-btn mermaid-dialog__copy"
               onClick={copy}
               disabled={!code.trim()}
             >
@@ -312,7 +312,7 @@ export function MermaidDialog({
             </button>
             <button
               type="button"
-              className="btn mermaid-dialog__clear"
+              className="notion-btn mermaid-dialog__clear"
               onClick={() => setCode('')}
               disabled={!code}
             >
@@ -320,19 +320,19 @@ export function MermaidDialog({
             </button>
             <button
               type="button"
-              className="btn mermaid-dialog__live"
+              className="notion-btn mermaid-dialog__live"
               onClick={openLive}
               disabled={!code.trim()}
             >
               <ExternalLink size={14} />
               Mermaid Live
             </button>
-            <button type="button" className="btn" onClick={onClose}>
+            <button type="button" className="notion-btn" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               disabled={!canSubmit}
               onClick={submit}
             >

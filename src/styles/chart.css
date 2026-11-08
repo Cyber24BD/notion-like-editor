@@ -555,7 +555,7 @@
   margin-left: auto;
 }
 
-.chart-dialog .btn:disabled {
+.chart-dialog .notion-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }

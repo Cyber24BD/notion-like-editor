@@ -36,7 +36,7 @@ The editor is also exposed as an embeddable component. Build the library and pac
 npm run build:lib
 npm pack
 # in your other app:
-npm install ../notion-like-editor-1.1.0.tgz
+npm install ../cyber24bd-notion-like-editor-2.0.0.tgz
 ```
 
 ```tsx
@@ -45,8 +45,8 @@ import {
   NotionEditor,
   type JSONContent,
   type NotionEditorHandle,
-} from 'notion-like-editor'
-import 'notion-like-editor/style.css'
+} from '@cyber24bd/notion-like-editor'
+import '@cyber24bd/notion-like-editor/style.css'
 
 export function MyPage() {
   const [title, setTitle] = useState('My document')
@@ -80,7 +80,7 @@ export function MyPage() {
 }
 ```
 
-- **Standalone or Tiptap-hosted.** The default entry bundles the editor stack. If your app already uses Tiptap, import `notion-like-editor/external` instead; it keeps every `@tiptap/*` and ProseMirror module external so there is one schema/Selection identity. Verify with `npm ls @tiptap/pm`.
+- **Standalone or Tiptap-hosted.** The default entry bundles the editor stack. If your app already uses Tiptap, import `@cyber24bd/notion-like-editor/external` instead; it keeps every `@tiptap/*` and ProseMirror module external so there is one schema/Selection identity. Verify with `npm ls @tiptap/pm`.
 - **React 18 or 19.** React is a peer dependency; the editor stack ships with the package.
 - **Size the parent.** The editor fills its container and scrolls internally, so give the wrapper a height.
 - **Controlled content:** `value` + `onContentChange` keeps the document in sync. External value changes (server loads, undo from your app, etc.) are applied **without remounting**. `content` is still available as initial-only content. Keep `value` stable while typing; don't feed back a debounced stale snapshot.
@@ -92,7 +92,7 @@ export function MyPage() {
 import {
   migrateVersionedContent,
   type VersionedContent,
-} from 'notion-like-editor'
+} from '@cyber24bd/notion-like-editor'
 
 const [document, setDocument] = useState<VersionedContent>(() =>
   migrateVersionedContent(savedDocument),
@@ -107,17 +107,24 @@ const [document, setDocument] = useState<VersionedContent>(() =>
 - **Image uploads:** with `uploadImage`, images are uploaded and only the returned URL is stored. Uploads are optimistic: a preview appears immediately, with progress, cancel, retry and inline errors. Up to **3 images** prepare/upload at once; the rest wait in a queue. Cancelling immediately frees the slot, even if the host’s uploader ignores `AbortSignal`, and a stalled upload times out after 60 seconds. The editor passes an optimized file: large raster images arrive as **WebP under 200 KB**; images already under 200 KB, SVGs and GIFs arrive as the original file. `context.originalFile` always contains the untouched upload. Use `context.signal` for cancellation and `context.onProgress(0–100)` to report progress. Return a URL or `{ src, width, height, alt }`; return `null` to cancel. Handle failures with `onImageUploadError`.
 - **Uploading images are never persisted.** Preview blob URLs and progress attrs live only in the live editor. `getJSON()` and `onContentChange` return the saved shape, so it is safe to save while an upload is in flight. Replacing an image keeps the old URL persisted until the new upload succeeds.
 - **Without an uploader:** images use the same optimistic placeholder and queue, compressed locally (same 200 KB WebP rule) and embedded as data URLs. Videos and charts store metadata/settings rather than media bytes.
+- **Entry points:**
+  - `@cyber24bd/notion-like-editor` — full bundled editor
+  - `@cyber24bd/notion-like-editor/core` — core blocks only
+  - `@cyber24bd/notion-like-editor/standard` — core + code, video, bookmarks, TOC, charts
+  - `/external` variants of the above — host supplies Tiptap
+  - `style.css`, `core.css`, `standard.css` — matching scoped styles
+- **Core/standard JS is genuinely smaller:** the preset builds use separate extension factories and CSS entries, not just runtime flags. For example, the external core entry is ~107 KB vs ~359 KB for external full; core CSS is ~53 KB vs ~120 KB full.
 - **Feature presets / custom extensions:** `CORE_FEATURES`, `STANDARD_FEATURES` and `FULL_FEATURES` restrict which optional blocks are registered and shown in the slash menu. Pass `features` and/or `extensions` to `NotionEditor`. These are **mount-time** content capabilities; runtime flags do not tree-shake the bundle, and existing documents containing disabled nodes need migration before mounting.
 - **Optional callbacks:** `onIconChange`, `onNavigatePage` / `onCreateSubPage` for page links.
 - **Presentation props:** `editable`, `showHeader`, `showBubbleToolbar`, `showTableToolbar`, `className`.
-- **Scoped styles:** the library stylesheet is scoped to `.notion-editor-root`; dialogs/toolbars are wrapped in the same scope. It no longer resets your host `body`, `:root` or generic `.btn`/`.menu`/`.popover` rules. Set `data-theme="dark"` on `<html>` for dark mode, or override the scoped CSS variables.
+- **Scoped styles:** the library stylesheet is scoped to `.notion-editor-root`; dialogs/toolbars are wrapped in the same scope. It no longer resets your host `body`/`:root`, and generic button/menu/popover/page classes are prefixed with `notion-` so host rules cannot collide. Set `data-theme="dark"` on `<html>` for dark mode, or override the scoped CSS variables.
 - **Math styles:** math blocks use KaTeX. The core stylesheet no longer bundles KaTeX’s font files; if you use math, import `katex/dist/katex.min.css` once in your app. The demo already does this.
 - **Bundle shape:** the scoped library stylesheet is ~119 KB on disk (down from ~1.5 MB with KaTeX fonts). The editor JavaScript is still a single bundled stack (~1.23 MB minified / ~323 KB gzip); feature flags are the next weight lever.
 - **Types** are included at `dist-lib/lib/index.d.ts`; the package exports `./style.css`.
 
 The demo app (`src/App.tsx`, `src/store`) is separate from the library entry and is not required by consumers.
 
-**Publishing note:** the unscoped `notion-like-editor` name is already taken on npm. Use the packed tarball, a private registry, or publish under a scope such as `@cyber24bd/notion-like-editor` before relying on `npm install notion-like-editor`.
+**Publishing:** the package is scoped as `@cyber24bd/notion-like-editor` and configured for public npm publication (`npm publish --access public`). Local tarball installs are also supported.
 
 ## What's included
 

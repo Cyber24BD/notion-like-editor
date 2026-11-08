@@ -10,22 +10,22 @@ export function PageLinkView({ node, selected }: NodeViewProps) {
 
   return (
     <NodeViewWrapper
-      className="page-link-row"
+      className="notion-page-link-row"
       data-selected={selected ? 'true' : 'false'}
       contentEditable={false}
     >
       <button
         type="button"
-        className="page-link-row__button"
+        className="notion-page-link-row__button"
         onClick={() => {
           if (pageId) navigate(pageId)
         }}
       >
-        <span className="page-link-row__icon" aria-hidden="true">
+        <span className="notion-page-link-row__icon" aria-hidden="true">
           {icon}
         </span>
-        <span className="page-link-row__title">{title}</span>
-        <span className="page-link-row__arrow" aria-hidden="true">
+        <span className="notion-page-link-row__title">{title}</span>
+        <span className="notion-page-link-row__arrow" aria-hidden="true">
           <ArrowLeft size={14} />
         </span>
       </button>

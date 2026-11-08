@@ -218,7 +218,7 @@ export function CodeBlockView({
           y={heightMenuAt.y}
           width={196}
           entries={heightEntries}
-          header={<div className="menu__header">Code block height</div>}
+          header={<div className="notion-menu__header">Code block height</div>}
           onClose={() => setHeightMenuAt(null)}
         />
       )}

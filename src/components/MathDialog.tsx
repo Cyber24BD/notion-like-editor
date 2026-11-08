@@ -165,7 +165,7 @@ export function MathDialog({
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             aria-label="Close math dialog"
             onClick={onClose}
           >
@@ -290,7 +290,7 @@ export function MathDialog({
           <div className="video-dialog__actions">
             <button
               type="button"
-              className="btn math-dialog__copy"
+              className="notion-btn math-dialog__copy"
               onClick={copy}
               disabled={!latex.trim()}
             >
@@ -299,18 +299,18 @@ export function MathDialog({
             </button>
             <button
               type="button"
-              className="btn math-dialog__clear"
+              className="notion-btn math-dialog__clear"
               onClick={() => setLatex('')}
               disabled={!latex}
             >
               Clear
             </button>
-            <button type="button" className="btn" onClick={onClose}>
+            <button type="button" className="notion-btn" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               disabled={!canSubmit}
               onClick={submit}
             >

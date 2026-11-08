@@ -179,7 +179,7 @@ export default function App() {
         />
       )}
 
-      <main className="page-shell">
+      <main className="notion-page-shell">
         {activePage ? (
           <>
             <TopBar
@@ -211,7 +211,7 @@ export default function App() {
             <p>This workspace is empty.</p>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               onClick={() => createPage(null)}
             >
               Create a page

@@ -59,13 +59,13 @@ export function EmojiPicker({ onSelect, onClose, onRemove, className }: EmojiPic
   return (
     <div
       ref={ref}
-      className={`emoji-picker popover ${className ?? ''}`}
+      className={`emoji-picker notion-popover ${className ?? ''}`}
       role="dialog"
       aria-label="Pick an icon"
     >
       <div className="emoji-picker__head">
         <span className="emoji-picker__title">Icon</span>
-        <button className="icon-btn" onClick={onClose} aria-label="Close icon picker">
+        <button className="notion-icon-btn" onClick={onClose} aria-label="Close icon picker">
           <X size={14} />
         </button>
       </div>

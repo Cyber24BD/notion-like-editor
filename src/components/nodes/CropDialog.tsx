@@ -203,7 +203,7 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             onClick={onClose}
             aria-label="Cancel crop"
             disabled={busy}
@@ -274,19 +274,19 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
         <footer className="crop-dialog__foot">
           <button
             type="button"
-            className="btn"
+            className="notion-btn"
             onClick={() => setCrop(INITIAL_CROP)}
             disabled={busy}
           >
             Reset
           </button>
           <div className="crop-dialog__actions">
-            <button type="button" className="btn" onClick={onClose} disabled={busy}>
+            <button type="button" className="notion-btn" onClick={onClose} disabled={busy}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               onClick={() => void apply()}
               disabled={busy}
             >

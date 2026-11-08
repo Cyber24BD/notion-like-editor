@@ -232,7 +232,7 @@ export function ImageBlockView({
     selected && !cropOpen && !hasUpload && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar popover"
+            className="image-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Image options"
@@ -344,7 +344,7 @@ export function ImageBlockView({
       y={styleMenuAt.y}
       width={208}
       entries={styleEntries}
-      header={<div className="menu__header">Image style</div>}
+      header={<div className="notion-menu__header">Image style</div>}
       onClose={() => setStyleMenuAt(null)}
     />
   ) : null
@@ -393,7 +393,7 @@ export function ImageBlockView({
                 <div className="image-upload-overlay__actions">
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className="notion-btn notion-btn--primary"
                     disabled={!uploadId}
                     onClick={() => retryImageUpload(editor.view, uploadId)}
                   >
@@ -401,7 +401,7 @@ export function ImageBlockView({
                   </button>
                   <button
                     type="button"
-                    className="btn"
+                    className="notion-btn"
                     disabled={!uploadId}
                     onClick={() => cancelImageUpload(editor.view, uploadId)}
                   >
@@ -432,7 +432,7 @@ export function ImageBlockView({
                 </div>
                 <button
                   type="button"
-                  className="btn image-upload-overlay__cancel"
+                  className="notion-btn image-upload-overlay__cancel"
                   disabled={!uploadId}
                   onClick={() => cancelImageUpload(editor.view, uploadId)}
                 >

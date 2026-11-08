@@ -25,7 +25,7 @@ test('controlled value applies external content without remounting', async ({
   await expect(page.locator('.notion-editor')).toContainText(
     'No remount happened.',
   )
-  await expect(page.locator('.page-title')).toHaveValue('Harness document')
+  await expect(page.locator('.notion-page-title')).toHaveValue('Harness document')
 
   const sameEditor = await page.evaluate(() => {
     const host = window as unknown as { __pm?: Element | null }
@@ -194,9 +194,9 @@ test('shift-click on the handle extends the block range', async ({ page }) => {
     'true',
   )
   await page.locator('.block-handle__btn--grip').click()
-  await expect(page.locator('.menu')).toBeVisible()
+  await expect(page.locator('.notion-menu')).toBeVisible()
   await page.keyboard.press('Escape')
-  await expect(page.locator('.menu')).toHaveCount(0)
+  await expect(page.locator('.notion-menu')).toHaveCount(0)
 
   await page.locator('.notion-editor p').nth(2).hover()
   await expect(page.locator('.drag-handle')).toHaveAttribute(
@@ -226,11 +226,11 @@ test('block menu exposes group actions', async ({ page }) => {
   )
   await page.locator('.block-handle__btn--grip').click()
 
-  await expect(page.locator('.menu__label').filter({ hasText: 'Duplicate 2 blocks' })).toBeVisible()
-  await expect(page.locator('.menu__label').filter({ hasText: 'Delete 2 blocks' })).toBeVisible()
-  await expect(page.locator('.menu__label').filter({ hasText: 'Copy 2 blocks' })).toBeVisible()
+  await expect(page.locator('.notion-menu__label').filter({ hasText: 'Duplicate 2 blocks' })).toBeVisible()
+  await expect(page.locator('.notion-menu__label').filter({ hasText: 'Delete 2 blocks' })).toBeVisible()
+  await expect(page.locator('.notion-menu__label').filter({ hasText: 'Copy 2 blocks' })).toBeVisible()
 
-  await page.locator('.menu__label').filter({ hasText: 'Duplicate 2 blocks' }).click()
+  await page.locator('.notion-menu__label').filter({ hasText: 'Duplicate 2 blocks' }).click()
   await expect(page.locator('.notion-editor > *')).toHaveCount(6)
 })
 

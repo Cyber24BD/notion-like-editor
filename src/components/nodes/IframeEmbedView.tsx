@@ -401,7 +401,7 @@ export function IframeEmbedView({
     selected && !settingsOpen && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar iframe-toolbar popover"
+            className="image-toolbar iframe-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Iframe options"
@@ -635,7 +635,7 @@ export function IframeEmbedView({
           y={heightMenuAt.y}
           width={196}
           entries={heightEntries}
-          header={<div className="menu__header">Height</div>}
+          header={<div className="notion-menu__header">Height</div>}
           onClose={() => setHeightMenuAt(null)}
         />
       )}

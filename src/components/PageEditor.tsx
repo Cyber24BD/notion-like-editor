@@ -451,8 +451,8 @@ function PageEditor({
     const target = event.target as HTMLElement
     if (
       target === event.currentTarget ||
-      target.classList.contains('page-content') ||
-      target.classList.contains('page-bottom-spacer')
+      target.classList.contains('notion-page-content') ||
+      target.classList.contains('notion-page-bottom-spacer')
     ) {
       focusEnd()
     }
@@ -460,35 +460,35 @@ function PageEditor({
 
   return (
     <div className="notion-editor-root">
-      <div className={`page ${className}`.trim()}>
+      <div className={`notion-page ${className}`.trim()}>
       <div
-        className="page-scroll notion-scroll"
+        className="notion-page-scroll notion-scroll"
         ref={setScrollEl}
         onClick={handleBackgroundClick}
       >
-        <div className="page-content">
+        <div className="notion-page-content">
           {showHeader && (
-          <div className="page-header">
-            <div className="page-icon-slot">
+          <div className="notion-page-header">
+            <div className="notion-page-icon-slot">
               {icon ? (
                 onIconChange ? (
                   <button
                     type="button"
-                    className="page-icon"
+                    className="notion-page-icon"
                     onClick={() => setIconPickerOpen((open) => !open)}
                     aria-label="Change page icon"
                   >
                     {icon}
                   </button>
                 ) : (
-                  <span className="page-icon" aria-hidden="true">
+                  <span className="notion-page-icon" aria-hidden="true">
                     {icon}
                   </span>
                 )
               ) : onIconChange ? (
                 <button
                   type="button"
-                  className="page-add-icon"
+                  className="notion-page-add-icon"
                   onClick={() => setIconPickerOpen(true)}
                 >
                   <span aria-hidden="true">😊</span> Add icon
@@ -512,7 +512,7 @@ function PageEditor({
 
             <textarea
               ref={titleRef}
-              className="page-title"
+              className="notion-page-title"
               value={title}
               rows={1}
               placeholder="Untitled"
@@ -534,7 +534,7 @@ function PageEditor({
           </div>
           )}
 
-          <div className="page-body">
+          <div className="notion-page-body">
             {editor && (
               <PageNavContext.Provider value={navValue}>
                 <EditorContent editor={editor} />
@@ -545,7 +545,7 @@ function PageEditor({
             {editor && showTableToolbar && <TableToolbar editor={editor} />}
           </div>
 
-          <div className="page-bottom-spacer" aria-hidden="true" />
+          <div className="notion-page-bottom-spacer" aria-hidden="true" />
         </div>
       </div>
       <SlashMenu />

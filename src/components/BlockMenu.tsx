@@ -239,12 +239,12 @@ export function BlockMenu({ editor, target, x, y, onClose }: BlockMenuProps) {
       }
       header={
         rangeActive && view === 'root' ? (
-          <div className="menu__header">{blockCount} blocks selected</div>
+          <div className="notion-menu__header">{blockCount} blocks selected</div>
         ) :
         view === 'turn' ? (
           <button
             type="button"
-            className="menu__header menu__header--back"
+            className="notion-menu__header notion-menu__header--back"
             onClick={() => setView('root')}
           >
             <ArrowLeft size={14} />

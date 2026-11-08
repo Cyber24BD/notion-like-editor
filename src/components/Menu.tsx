@@ -68,7 +68,7 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
   return createNotionPortal(
     <div
       ref={ref}
-      className="menu popover"
+      className="notion-menu notion-popover"
       role="menu"
       style={{ left: position.left, top: position.top, width }}
       onMouseDown={(event) => event.preventDefault()}
@@ -76,13 +76,13 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
       {header}
       {entries.map((entry) =>
         'type' in entry ? (
-          <div key={entry.id} className="menu__separator" role="separator" />
+          <div key={entry.id} className="notion-menu__separator" role="separator" />
         ) : (
           <button
             key={entry.id}
             type="button"
             role="menuitem"
-            className="menu__item"
+            className="notion-menu__item"
             data-danger={entry.danger ? 'true' : 'false'}
             onMouseDown={(event) => event.preventDefault()}
             disabled={entry.disabled}
@@ -91,9 +91,9 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
               if (!entry.keepOpen) onClose()
             }}
           >
-            {entry.icon && <span className="menu__icon">{entry.icon}</span>}
-            <span className="menu__label">{entry.label}</span>
-            {entry.shortcut && <span className="menu__shortcut">{entry.shortcut}</span>}
+            {entry.icon && <span className="notion-menu__icon">{entry.icon}</span>}
+            <span className="notion-menu__label">{entry.label}</span>
+            {entry.shortcut && <span className="notion-menu__shortcut">{entry.shortcut}</span>}
           </button>
         ),
       )}

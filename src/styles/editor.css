@@ -2,7 +2,7 @@
  * Page shell                                                          *
  * ------------------------------------------------------------------ */
 
-.page {
+.notion-page {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -10,7 +10,7 @@
   flex-direction: column;
 }
 
-.page-scroll {
+.notion-page-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -18,7 +18,7 @@
   position: relative;
 }
 
-.page-content {
+.notion-page-content {
   width: 100%;
   max-width: calc(var(--content-w) + var(--content-pad) * 2);
   margin: 0 auto;
@@ -28,12 +28,12 @@
   flex-direction: column;
 }
 
-.page-header {
+.notion-page-header {
   padding-top: 40px;
   position: relative;
 }
 
-.page-icon-slot {
+.notion-page-icon-slot {
   display: flex;
   align-items: center;
   min-height: 0;
@@ -41,7 +41,7 @@
   margin-left: -6px;
 }
 
-.page-icon {
+.notion-page-icon {
   font-size: 60px;
   line-height: 1.15;
   padding: 2px 6px;
@@ -50,11 +50,11 @@
   cursor: pointer;
 }
 
-.page-icon:hover {
+.notion-page-icon:hover {
   background: var(--hover);
 }
 
-.page-add-icon {
+.notion-page-add-icon {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -69,17 +69,17 @@
     background-color var(--dur-fast) var(--ease-out);
 }
 
-.page-header:hover .page-add-icon,
-.page-add-icon:focus-visible {
+.notion-page-header:hover .notion-page-add-icon,
+.notion-page-add-icon:focus-visible {
   opacity: 1;
 }
 
-.page-add-icon:hover {
+.notion-page-add-icon:hover {
   background: var(--hover);
   color: var(--text-secondary);
 }
 
-.page-title {
+.notion-page-title {
   display: block;
   width: 100%;
   margin: 2px 0 4px;
@@ -98,16 +98,16 @@
   outline: none;
 }
 
-.page-title::placeholder {
+.notion-page-title::placeholder {
   color: var(--text-placeholder);
 }
 
-.page-body {
+.notion-page-body {
   position: relative;
   padding-top: 4px;
 }
 
-.page-bottom-spacer {
+.notion-page-bottom-spacer {
   height: 30vh;
   min-height: 180px;
 }
@@ -586,11 +586,11 @@
  * Page link block                                                    *
  * ------------------------------------------------------------------ */
 
-.page-link-row {
+.notion-page-link-row {
   margin: 4px 0;
 }
 
-.page-link-row__button {
+.notion-page-link-row__button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -606,35 +606,35 @@
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
-.page-link-row__button:hover {
+.notion-page-link-row__button:hover {
   background: var(--hover);
 }
 
-.page-link-row__icon {
+.notion-page-link-row__icon {
   font-size: 18px;
   line-height: 1;
   flex: none;
 }
 
-.page-link-row__title {
+.notion-page-link-row__title {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.page-link-row__arrow {
+.notion-page-link-row__arrow {
   opacity: 0;
   color: var(--text-tertiary);
   transform: rotate(180deg);
   transition: opacity var(--dur-fast) var(--ease-out);
 }
 
-.page-link-row__button:hover .page-link-row__arrow {
+.notion-page-link-row__button:hover .notion-page-link-row__arrow {
   opacity: 1;
 }
 
-.page-link-row[data-selected='true'] .page-link-row__button {
+.notion-page-link-row[data-selected='true'] .notion-page-link-row__button {
   background: var(--accent-soft);
 }
 
@@ -1059,15 +1059,15 @@ kbd {
     --content-pad: 32px;
   }
 
-  .page-header {
+  .notion-page-header {
     padding-top: 24px;
   }
 
-  .page-title {
+  .notion-page-title {
     font-size: 34px;
   }
 
-  .page-icon {
+  .notion-page-icon {
     font-size: 52px;
   }
 }
@@ -1077,15 +1077,15 @@ kbd {
     --content-pad: 18px;
   }
 
-  .page-header {
+  .notion-page-header {
     padding-top: 16px;
   }
 
-  .page-title {
+  .notion-page-title {
     font-size: 30px;
   }
 
-  .page-icon {
+  .notion-page-icon {
     font-size: 46px;
   }
 
@@ -1144,11 +1144,11 @@ kbd {
     display: none;
   }
 
-  .page-add-icon {
+  .notion-page-add-icon {
     opacity: 1;
   }
 
-  .page-link-row__arrow {
+  .notion-page-link-row__arrow {
     opacity: 1;
   }
 }

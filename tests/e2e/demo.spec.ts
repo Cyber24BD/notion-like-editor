@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 test('demo page switching keeps saved content', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('.notion-editor')).toBeVisible()
-  await expect(page.locator('.page-title')).toHaveValue('Getting started')
+  await expect(page.locator('.notion-page-title')).toHaveValue('Getting started')
   await expect(page.locator('.notion-editor')).toContainText(
     'Select any text to reveal the toolbar',
   )
@@ -11,11 +11,11 @@ test('demo page switching keeps saved content', async ({ page }) => {
   await page
     .locator('.tree-label', { hasText: 'Blocks & shortcuts' })
     .click()
-  await expect(page.locator('.page-title')).toHaveValue('Blocks & shortcuts')
+  await expect(page.locator('.notion-page-title')).toHaveValue('Blocks & shortcuts')
   await expect(page.locator('.notion-editor')).toContainText('Handy shortcuts')
 
   await page.locator('.tree-label', { hasText: 'Getting started' }).click()
-  await expect(page.locator('.page-title')).toHaveValue('Getting started')
+  await expect(page.locator('.notion-page-title')).toHaveValue('Getting started')
   await expect(page.locator('.notion-editor')).toContainText(
     'Select any text to reveal the toolbar',
   )
@@ -25,7 +25,7 @@ test('demo can create a chart block from the slash menu', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('.notion-editor')).toBeVisible()
 
-  const scroll = page.locator('.page-scroll')
+  const scroll = page.locator('.notion-page-scroll')
   await scroll.evaluate((element) => {
     element.scrollTop = element.scrollHeight
   })

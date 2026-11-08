@@ -1,19 +1,30 @@
 import fs from 'node:fs'
 
-const external = fs.readFileSync('dist-lib/external/index.js', 'utf8')
-const failures = []
+const entries = [
+  ['dist-lib/external/index.js', 600_000],
+  ['dist-lib/core-external/index.js', 300_000],
+  ['dist-lib/standard-external/index.js', 500_000],
+]
 
-if (!/from\s+["']@tiptap\/core["']/.test(external)) {
-  failures.push('external entry does not import @tiptap/core as a bare module')
-}
-if (!/from\s+["']@tiptap\/react["']/.test(external)) {
-  failures.push('external entry does not import @tiptap/react as a bare module')
-}
-if (!/from\s+["']react["']/.test(external)) {
-  failures.push('external entry does not import react as a bare module')
-}
-if (external.length > 600_000) {
-  failures.push(`external entry is ${external.length} bytes; Tiptap may be bundled`)
+const failures = []
+for (const [file, maxSize] of entries) {
+  if (!fs.existsSync(file)) {
+    failures.push(`missing ${file}`)
+    continue
+  }
+  const source = fs.readFileSync(file, 'utf8')
+  if (!/from\s+["']@tiptap\/core["']/.test(source)) {
+    failures.push(`${file} does not keep @tiptap/core external`)
+  }
+  if (!/from\s+["']@tiptap\/react["']/.test(source)) {
+    failures.push(`${file} does not keep @tiptap/react external`)
+  }
+  if (!/from\s+["']react["']/.test(source)) {
+    failures.push(`${file} does not keep react external`)
+  }
+  if (source.length > maxSize) {
+    failures.push(`${file} is ${source.length} bytes; Tiptap may be bundled`)
+  }
 }
 
 if (failures.length > 0) {
@@ -21,4 +32,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`External Tiptap entry verified (${Math.round(external.length / 1024)} KB).`)
+console.log('External Tiptap entries verified (full, core, standard).')

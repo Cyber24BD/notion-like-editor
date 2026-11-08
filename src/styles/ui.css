@@ -17,7 +17,7 @@
   }
 }
 
-.page-shell {
+.notion-page-shell {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -670,7 +670,7 @@
     gap: 4px;
   }
 
-  .topbar__right .btn {
+  .topbar__right .notion-btn {
     display: none;
   }
 

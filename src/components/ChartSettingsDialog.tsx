@@ -193,7 +193,7 @@ export function ChartSettingsDialog({
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             aria-label="Close chart settings"
             onClick={onClose}
           >
@@ -339,13 +339,13 @@ export function ChartSettingsDialog({
           <div className="chart-data__head">
             <span className="chart-data__title">Data</span>
             <div className="chart-data__actions">
-              <button type="button" className="btn" onClick={addRow}>
+              <button type="button" className="notion-btn" onClick={addRow}>
                 <Plus size={14} /> Add row
               </button>
               {!isPie && (
                 <button
                   type="button"
-                  className="btn"
+                  className="notion-btn"
                   onClick={addSeries}
                   disabled={draft.series.length >= 4}
                 >
@@ -444,12 +444,12 @@ export function ChartSettingsDialog({
             Charts are real SVG — they scale with the page and work in dark mode.
           </span>
           <div className="chart-dialog__actions">
-            <button type="button" className="btn" onClick={onClose}>
+            <button type="button" className="notion-btn" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               disabled={!canApply}
               onClick={submit}
             >

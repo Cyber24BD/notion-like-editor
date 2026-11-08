@@ -240,7 +240,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
     >
       {linkOpen ? (
         <form
-          className="bubble-menu__link"
+          className="bubble-notion-menu__link"
           onSubmit={(event) => {
             event.preventDefault()
             applyLink()
@@ -260,12 +260,12 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
               }
             }}
           />
-          <button type="submit" className="bubble-menu__submit" aria-label="Apply link">
+          <button type="submit" className="bubble-notion-menu__submit" aria-label="Apply link">
             <Check size={14} />
           </button>
           <button
             type="button"
-            className="bubble-menu__submit"
+            className="bubble-notion-menu__submit"
             aria-label="Cancel"
             onClick={() => setLinkOpen(false)}
           >
@@ -276,7 +276,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
         <>
           <button
             type="button"
-            className="bubble-menu__btn bubble-menu__btn--turn"
+            className="bubble-notion-menu__btn bubble-notion-menu__btn--turn"
             aria-haspopup="menu"
             aria-label="Turn into"
             data-tooltip="Turn into"
@@ -284,13 +284,13 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
             onClick={openTurnInto}
           >
             <Type size={15} />
-            <ChevronDown size={9} className="bubble-menu__chevron" />
+            <ChevronDown size={9} className="bubble-notion-menu__chevron" />
           </button>
-          <span className="bubble-menu__divider" />
+          <span className="bubble-notion-menu__divider" />
 
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.bold}
             aria-label="Bold"
             data-tooltip={`Bold · ${MOD}B`}
@@ -301,7 +301,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           </button>
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.italic}
             aria-label="Italic"
             data-tooltip={`Italic · ${MOD}I`}
@@ -312,7 +312,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           </button>
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.underline}
             aria-label="Underline"
             data-tooltip={`Underline · ${MOD}U`}
@@ -323,7 +323,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           </button>
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.strike}
             aria-label="Strikethrough"
             data-tooltip={`Strikethrough · ${MOD}⇧S`}
@@ -334,7 +334,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           </button>
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.code}
             aria-label="Inline code"
             data-tooltip={`Code · ${MOD}E`}
@@ -344,11 +344,11 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
             <Code size={15} />
           </button>
 
-          <span className="bubble-menu__divider" />
+          <span className="bubble-notion-menu__divider" />
 
           <button
             type="button"
-            className="bubble-menu__btn bubble-menu__btn--color"
+            className="bubble-notion-menu__btn bubble-notion-menu__btn--color"
             aria-haspopup="dialog"
             aria-label="Text color"
             aria-pressed={marks.color !== null}
@@ -358,13 +358,13 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           >
             <TextColor size={16} />
             <span
-              className="bubble-menu__color-bar"
+              className="bubble-notion-menu__color-bar"
               style={{ background: marks.color ?? 'var(--text)' }}
             />
           </button>
           <button
             type="button"
-            className="bubble-menu__btn bubble-menu__btn--color"
+            className="bubble-notion-menu__btn bubble-notion-menu__btn--color"
             aria-haspopup="dialog"
             aria-label="Highlight color"
             aria-pressed={marks.highlight}
@@ -375,18 +375,18 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           >
             <Highlighter size={16} />
             <span
-              className="bubble-menu__color-bar"
+              className="bubble-notion-menu__color-bar"
               style={{
                 background: marks.highlightColor ?? 'var(--highlight-yellow)',
               }}
             />
           </button>
 
-          <span className="bubble-menu__divider" />
+          <span className="bubble-notion-menu__divider" />
 
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-pressed={marks.link}
             aria-label="Link"
             data-tooltip="Link"
@@ -403,7 +403,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           </button>
           <button
             type="button"
-            className="bubble-menu__btn"
+            className="bubble-notion-menu__btn"
             aria-label="Clear formatting"
             data-tooltip="Clear formatting"
             onMouseDown={keepSelection}
@@ -420,7 +420,7 @@ export function BubbleToolbar({ editor, scrollTarget }: BubbleToolbarProps) {
           y={turnIntoAt.y}
           width={216}
           entries={turnIntoEntries}
-          header={<div className="menu__header">Turn into</div>}
+          header={<div className="notion-menu__header">Turn into</div>}
           onClose={() => setTurnIntoAt(null)}
         />
       )}

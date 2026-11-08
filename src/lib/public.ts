@@ -1,4 +1,3 @@
-export { NotionEditor } from '../components/PageEditor'
 export type {
   NotionEditorHandle,
   NotionEditorProps,

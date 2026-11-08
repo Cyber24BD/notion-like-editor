@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0
+
+- Scoped package as `@cyber24bd/notion-like-editor` for public publication.
+- Added `core`, `standard`, `full` preset entries with matching CSS.
+- Added external-Tiptap variants for all presets.
+- Preserved the previous full editor as the default `notion-like-editor` behavior.
+
 ## 1.1.0
 
 - Added multi-block selection, group actions and range dragging.

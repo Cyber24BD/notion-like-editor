@@ -186,7 +186,7 @@ export function VideoEmbedView({
     selected && !settingsOpen && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar video-toolbar popover"
+            className="image-toolbar video-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Video options"
@@ -399,7 +399,7 @@ export function VideoEmbedView({
           y={aspectMenuAt.y}
           width={196}
           entries={aspectEntries}
-          header={<div className="menu__header">Aspect ratio</div>}
+          header={<div className="notion-menu__header">Aspect ratio</div>}
           onClose={() => setAspectMenuAt(null)}
         />
       )}

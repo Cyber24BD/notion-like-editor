@@ -151,7 +151,7 @@ export function ColorPalette({
   return createNotionPortal(
     <div
       ref={containerRef}
-      className="color-palette popover"
+      className="color-palette notion-popover"
       style={{ top, left, width: WIDTH }}
       role="dialog"
       aria-label={kind === 'text' ? 'Text color' : 'Highlight color'}

@@ -243,7 +243,7 @@ export function BookmarkDialog({
           </div>
           <button
             type="button"
-            className="icon-btn"
+            className="notion-icon-btn"
             aria-label="Close bookmark dialog"
             onClick={onClose}
           >
@@ -282,7 +282,7 @@ export function BookmarkDialog({
             </div>
             <button
               type="button"
-              className="btn bookmark-dialog__fetch"
+              className="notion-btn bookmark-dialog__fetch"
               data-loading={fetching ? 'true' : 'false'}
               disabled={!parsedUrl || fetching}
               onClick={fetchDetails}
@@ -383,12 +383,12 @@ export function BookmarkDialog({
             favicon.
           </span>
           <div className="video-dialog__actions">
-            <button type="button" className="btn" onClick={onClose}>
+            <button type="button" className="notion-btn" onClick={onClose}>
               Cancel
             </button>
             <button
               type="button"
-              className="btn btn--primary"
+              className="notion-btn notion-btn--primary"
               disabled={!canSubmit}
               onClick={submit}
             >

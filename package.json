@@ -1,7 +1,6 @@
 {
-  "name": "notion-like-editor",
-  "private": true,
-  "version": "1.1.0",
+  "name": "@cyber24bd/notion-like-editor",
+  "version": "2.0.0",
   "description": "A Notion-style block editor built with React, TypeScript, Tiptap and Vite.",
   "license": "GPL-2.0-only",
   "repository": {
@@ -27,7 +26,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "build:lib": "vite build --config vite.lib.config.ts && vite build --config vite.lib.external.config.ts && tsc -p tsconfig.lib.json && node scripts/fix-lib-types.mjs && node scripts/verify-lib-css.mjs && node scripts/verify-lib-entry.mjs",
+    "build:lib": "node scripts/build-lib.mjs && tsc -p tsconfig.lib.json && node scripts/fix-lib-types.mjs && node scripts/verify-lib-css.mjs && node scripts/verify-lib-entry.mjs && node scripts/verify-lib-presets.mjs",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run test:e2e",
@@ -80,7 +79,25 @@
     "./external": {
       "types": "./dist-lib/lib/index.d.ts",
       "import": "./dist-lib/external/index.js"
-    }
+    },
+    "./core": {
+      "types": "./dist-lib/lib/core.d.ts",
+      "import": "./dist-lib/core.js"
+    },
+    "./standard": {
+      "types": "./dist-lib/lib/standard.d.ts",
+      "import": "./dist-lib/standard.js"
+    },
+    "./core/external": {
+      "types": "./dist-lib/lib/coreExternal.d.ts",
+      "import": "./dist-lib/core-external/index.js"
+    },
+    "./standard/external": {
+      "types": "./dist-lib/lib/standardExternal.d.ts",
+      "import": "./dist-lib/standard-external/index.js"
+    },
+    "./core.css": "./dist-lib/core.css",
+    "./standard.css": "./dist-lib/standard.css"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -88,5 +105,8 @@
   },
   "sideEffects": [
     "*.css"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -3,7 +3,7 @@
  * ------------------------------------------------------------------ */
 
 
-.menu {
+.notion-menu {
   position: fixed;
   z-index: var(--z-popover);
   max-height: min(70vh, 520px);
@@ -11,7 +11,7 @@
   padding: 4px;
 }
 
-.menu__item {
+.notion-menu__item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -25,53 +25,53 @@
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
-.menu__item:hover:not(:disabled) {
+.notion-menu__item:hover:not(:disabled) {
   background: var(--hover);
 }
 
-.menu__item:disabled {
+.notion-menu__item:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.menu__item[data-danger='true'] {
+.notion-menu__item[data-danger='true'] {
   color: var(--danger);
 }
 
-.menu__item[data-danger='true']:hover:not(:disabled) {
+.notion-menu__item[data-danger='true']:hover:not(:disabled) {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
-.menu__icon {
+.notion-menu__icon {
   display: inline-flex;
   flex: none;
   color: var(--text-secondary);
 }
 
-.menu__item[data-danger='true'] .menu__icon {
+.notion-menu__item[data-danger='true'] .notion-menu__icon {
   color: var(--danger);
 }
 
-.menu__label {
+.notion-menu__label {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.menu__shortcut {
+.notion-menu__shortcut {
   flex: none;
   font-size: 12px;
   color: var(--text-tertiary);
 }
 
-.menu__separator {
+.notion-menu__separator {
   height: 1px;
   margin: 4px 6px;
   background: var(--border);
 }
 
-.menu__header {
+.notion-menu__header {
   display: block;
   padding: 6px 8px 2px;
   font-size: 11.5px;
@@ -79,7 +79,7 @@
   color: var(--text-tertiary);
 }
 
-.menu__header--back {
+.notion-menu__header--back {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -91,7 +91,7 @@
   text-align: left;
 }
 
-.menu__header--back:hover {
+.notion-menu__header--back:hover {
   background: var(--hover);
   color: var(--text);
 }

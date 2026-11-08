@@ -219,7 +219,7 @@ export function ChartView({
     selected && !settingsOpen && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar chart-toolbar popover"
+            className="image-toolbar chart-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Chart block toolbar"
@@ -329,7 +329,7 @@ export function ChartView({
           y={menu.y}
           width={188}
           entries={kindEntries}
-          header={<div className="menu__header">Chart type</div>}
+          header={<div className="notion-menu__header">Chart type</div>}
           onClose={() => setMenu(null)}
         />
       )}
@@ -339,7 +339,7 @@ export function ChartView({
           y={menu.y}
           width={196}
           entries={paletteEntries}
-          header={<div className="menu__header">Palette</div>}
+          header={<div className="notion-menu__header">Palette</div>}
           onClose={() => setMenu(null)}
         />
       )}
@@ -349,7 +349,7 @@ export function ChartView({
           y={menu.y}
           width={214}
           entries={optionsEntries}
-          header={<div className="menu__header">Display</div>}
+          header={<div className="notion-menu__header">Display</div>}
           onClose={() => setMenu(null)}
         />
       )}

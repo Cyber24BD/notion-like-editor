@@ -225,7 +225,7 @@ export function AudioEmbedView({
     selected && !settingsOpen && toolbarAt
       ? createNotionPortal(
           <div
-            className="image-toolbar audio-toolbar popover"
+            className="image-toolbar audio-toolbar notion-popover"
             style={{ top: toolbarAt.top, left: toolbarAt.left }}
             role="toolbar"
             aria-label="Audio options"
@@ -438,7 +438,7 @@ export function AudioEmbedView({
           y={heightMenuAt.y}
           width={196}
           entries={heightEntries}
-          header={<div className="menu__header">Audio height</div>}
+          header={<div className="notion-menu__header">Audio height</div>}
           onClose={() => setHeightMenuAt(null)}
         />
       )}

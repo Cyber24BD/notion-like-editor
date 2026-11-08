@@ -84,7 +84,7 @@ export function TopBar({
       <div className="topbar__left">
         <button
           type="button"
-          className="icon-btn topbar__toggle"
+          className="notion-icon-btn topbar__toggle"
           aria-label="Toggle sidebar"
           data-tooltip="Toggle sidebar"
           onClick={onToggleSidebar}
@@ -119,12 +119,12 @@ export function TopBar({
         <span className="topbar__meta">
           {wordCount} {wordCount === 1 ? 'word' : 'words'}
         </span>
-        <button type="button" className="btn" onClick={() => void share()}>
+        <button type="button" className="notion-btn" onClick={() => void share()}>
           {copied ? 'Link copied' : 'Share'}
         </button>
         <button
           type="button"
-          className="icon-btn"
+          className="notion-icon-btn"
           aria-label="Page options"
           onClick={(event) => {
             const rect = event.currentTarget.getBoundingClientRect()
@@ -135,7 +135,7 @@ export function TopBar({
         </button>
         <button
           type="button"
-          className="icon-btn"
+          className="notion-icon-btn"
           aria-label="Toggle dark mode"
           data-tooltip="Toggle theme (⌘⇧M)"
           onClick={theme.cycle}

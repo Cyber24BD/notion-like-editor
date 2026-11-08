@@ -1,5 +1,9 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, readdir, writeFile } from 'node:fs/promises'
 
-const file = new URL('../dist-lib/lib/index.d.ts', import.meta.url)
-const source = await readFile(file, 'utf8')
-await writeFile(file, source.replace("import './notion-editor.css';\n", ''))
+const dir = new URL('../dist-lib/lib/', import.meta.url)
+for (const file of await readdir(dir)) {
+  if (!file.endsWith('.d.ts')) continue
+  const path = new URL(file, dir)
+  const source = await readFile(path, 'utf8')
+  await writeFile(path, source.replace(/^import ['"][^'"]+\.css['"];\n/gm, ''))
+}

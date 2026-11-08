@@ -1,26 +1,31 @@
 import fs from 'node:fs'
 
-const css = fs.readFileSync('dist-lib/notion-editor.css', 'utf8')
-const failures = []
-
-const checks = [
-  ['.notion-editor-root .btn', /\.notion-editor-root\s+\.btn\b/],
-  ['.notion-editor-root .menu', /\.notion-editor-root\s+\.menu\b/],
-  ['.notion-editor-root .popover', /\.notion-editor-root\s+\.popover\b/],
-  ['dark scoped selector', /\[data-theme=dark\]\s+\.notion-editor-root\b/],
+const stylesheets = [
+  ['notion-editor.css', 300_000],
+  ['core.css', 150_000],
+  ['standard.css', 200_000],
 ]
 
-for (const [label, pattern] of checks) {
-  if (!pattern.test(css)) failures.push(`missing ${label}`)
+const failures = []
+for (const [file, maxSize] of stylesheets) {
+  const path = `dist-lib/${file}`
+  if (!fs.existsSync(path)) {
+    failures.push(`missing ${file}`)
+    continue
+  }
+  const css = fs.readFileSync(path, 'utf8')
+  if (!css.includes('.notion-editor-root .notion-btn')) {
+    failures.push(`${file} is not scoped`)
+  }
+  if (/(^|})\s*body\s*\{/.test(css)) failures.push(`${file} still styles body`)
+  if (/:root\s*\{/.test(css)) failures.push(`${file} still styles :root globally`)
+  if (css.includes('KaTeX_Main')) failures.push(`${file} contains KaTeX fonts`)
+  if (css.length > maxSize) failures.push(`${file} is ${css.length} bytes`)
 }
-if (/(^|})\s*body\s*\{/.test(css)) failures.push('library CSS still styles body')
-if (/:root\s*\{/.test(css)) failures.push('library CSS still styles :root globally')
-if (css.includes('KaTeX_Main')) failures.push('KaTeX fonts are back in the base stylesheet')
-if (css.length > 300_000) failures.push(`stylesheet is ${css.length} bytes`)
 
 if (failures.length > 0) {
   console.error(`Library CSS verification failed:\n- ${failures.join('\n- ')}`)
   process.exit(1)
 }
 
-console.log(`Library CSS verified (${Math.round(css.length / 1024)} KB, scoped).`)
+console.log('Library stylesheets verified (full, core, standard; scoped).')

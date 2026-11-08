@@ -190,7 +190,7 @@ a {
   border: 0;
 }
 
-.btn {
+.notion-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -207,16 +207,16 @@ a {
   user-select: none;
 }
 
-.btn:hover {
+.notion-btn:hover {
   background: var(--hover);
   color: var(--text);
 }
 
-.btn:active {
+.notion-btn:active {
   background: var(--hover-strong);
 }
 
-.btn--primary {
+.notion-btn--primary {
   background: var(--accent);
   color: var(--accent-contrast);
   font-weight: 500;
@@ -224,16 +224,16 @@ a {
   height: 30px;
 }
 
-.btn--primary:hover {
+.notion-btn--primary:hover {
   background: var(--accent-hover);
   color: var(--accent-contrast);
 }
 
-.btn--ghost {
+.notion-btn--ghost {
   color: var(--text-secondary);
 }
 
-.icon-btn {
+.notion-icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -246,17 +246,17 @@ a {
   flex: none;
 }
 
-.icon-btn:hover {
+.notion-icon-btn:hover {
   background: var(--hover);
   color: var(--text);
 }
 
-.icon-btn[aria-pressed='true'] {
+.notion-icon-btn[aria-pressed='true'] {
   background: var(--active);
   color: var(--text);
 }
 
-.icon-btn svg {
+.notion-icon-btn svg {
   width: 16px;
   height: 16px;
 }
@@ -299,7 +299,7 @@ a {
 }
 
 /* Generic popover shell */
-.popover {
+.notion-popover {
   background: var(--bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
