@@ -189,6 +189,10 @@ export async function prepareImageFile(
   }
 }
 
+export function readPreparedImage(prepared: PreparedImage): Promise<string> {
+  return readAsDataURL(prepared.file)
+}
+
 export async function processImageFile(
   file: File,
   services?: ImageServices | null,
@@ -296,15 +300,6 @@ export async function cropImageSource(
 /** Opens the OS picker and resolves with the raw file. Must be user-gesture driven. */
 export function pickImageFileRaw(): Promise<File | null> {
   return openImagePicker()
-}
-
-/** Opens the picker and processes/upload the chosen file. */
-export async function pickImageFile(
-  services?: ImageServices | null,
-): Promise<PickedImage | null> {
-  const file = await openImagePicker()
-  if (!file) return null
-  return processImageFile(file, services)
 }
 
 function openImagePicker(): Promise<File | null> {

@@ -24,7 +24,7 @@ import {
   ToggleIcon,
   Type,
 } from '../../components/Icons'
-import { pickImageFile, pickImageFileRaw } from '../images/imageFiles'
+import { pickImageFileRaw } from '../images/imageFiles'
 import { getImageServices } from '../images/imageServices'
 import { insertImageFiles } from '../images/uploadManager'
 import { openVideoDialog } from '../video/dialogStore'
@@ -191,21 +191,14 @@ export const slashItems: SlashItem[] = [
       commands.run()
 
       const services = getImageServices(editor)
-      if (services?.uploader) {
-        void pickImageFileRaw().then((file) => {
-          if (!file || editor.isDestroyed) return
-          void insertImageFiles(
-            editor.view,
-            [file],
-            editor.state.selection.from,
-            services,
-          )
-        })
-        return
-      }
-      void pickImageFile(services).then((image) => {
-        if (!image || editor.isDestroyed) return
-        editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
+      void pickImageFileRaw().then((file) => {
+        if (!file || editor.isDestroyed) return
+        void insertImageFiles(
+          editor.view,
+          [file],
+          editor.state.selection.from,
+          services,
+        )
       })
     },
   },

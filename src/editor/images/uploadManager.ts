@@ -4,14 +4,15 @@ import { TextSelection } from '@tiptap/pm/state'
 import {
   imageAltFromFile,
   prepareImageFile,
-  processImageFile,
+  readPreparedImage,
   type ImageServices,
-  type PickedImage,
   type PreparedImage,
   type UploadedImage,
 } from './imageFiles'
 
 export const SKIP_CONTENT_META = 'notion:skip-content-change'
+
+const MAX_CONCURRENT_UPLOADS = 3
 
 const CLEAR_UPLOAD = {
   uploadId: null,
@@ -29,7 +30,7 @@ interface UploadTask {
   previewUrl: string
   alt: string
   mode: 'insert' | 'replace'
-  uploader: NonNullable<ImageServices['uploader']>
+  uploader?: NonNullable<ImageServices['uploader']>
   onUploadError?: ImageServices['onUploadError']
   controller: AbortController | null
   prepared?: PreparedImage
@@ -38,6 +39,7 @@ interface UploadTask {
 }
 
 const tasksByView = new WeakMap<EditorView, Map<string, UploadTask>>()
+const activeByView = new WeakMap<EditorView, Set<string>>()
 
 function tasksFor(view: EditorView): Map<string, UploadTask> {
   let tasks = tasksByView.get(view)
@@ -46,6 +48,15 @@ function tasksFor(view: EditorView): Map<string, UploadTask> {
     tasksByView.set(view, tasks)
   }
   return tasks
+}
+
+function activeFor(view: EditorView): Set<string> {
+  let active = activeByView.get(view)
+  if (!active) {
+    active = new Set()
+    activeByView.set(view, active)
+  }
+  return active
 }
 
 function uid(): string {
@@ -126,23 +137,31 @@ function insertNodes(
   return true
 }
 
-function insertPickedImages(
-  view: EditorView,
-  images: PickedImage[],
-  pos: number,
-): void {
-  const imageType = view.state.schema.nodes.image
-  if (!imageType) return
-  const nodes = images.map((image) =>
-    imageType.create({ src: image.src, alt: image.alt, title: image.alt }),
-  )
-  insertNodes(view, nodes, pos, false)
+function pumpQueue(view: EditorView): void {
+  if (view.isDestroyed) return
+  const active = activeFor(view)
+  const tasks = tasksFor(view)
+
+  for (const task of [...tasks.values()]) {
+    if (active.size >= MAX_CONCURRENT_UPLOADS) break
+    if (task.cancelled || task.running) continue
+
+    const pos = findUploadPos(view, task.id)
+    if (pos === null) {
+      cleanupTask(task)
+      continue
+    }
+    const node = view.state.doc.nodeAt(pos)
+    if (!node || node.attrs.uploadState !== 'queued') continue
+
+    active.add(task.id)
+    void runUpload(task)
+  }
 }
 
 /**
- * Inserts images at/after the position. With an upload adapter, a preview
- * placeholder is inserted immediately and the upload runs in the background.
- * Without one, the existing local compression pipeline is used.
+ * Inserts images at/after the position. Every path gets an optimistic
+ * placeholder; local processing and remote uploads share the same queue.
  */
 export async function insertImageFiles(
   view: EditorView,
@@ -150,16 +169,6 @@ export async function insertImageFiles(
   pos: number,
   services?: ImageServices | null,
 ): Promise<void> {
-  if (!services?.uploader) {
-    const processed = await Promise.all(
-      files.map((file) => processImageFile(file, services).catch(() => null)),
-    )
-    const images = processed.filter((image): image is PickedImage => image !== null)
-    if (view.isDestroyed) return
-    insertPickedImages(view, images, pos)
-    return
-  }
-
   const imageType = view.state.schema.nodes.image
   if (!imageType) return
 
@@ -175,7 +184,7 @@ export async function insertImageFiles(
         alt,
         title: alt,
         uploadId: id,
-        uploadState: 'preparing',
+        uploadState: 'queued',
         uploadProgress: 0,
         uploadError: null,
         uploadPreview: previewUrl,
@@ -189,8 +198,8 @@ export async function insertImageFiles(
       previewUrl,
       alt,
       mode: 'insert',
-      uploader: services.uploader,
-      onUploadError: services.onUploadError,
+      uploader: services?.uploader,
+      onUploadError: services?.onUploadError,
       controller: null,
       cancelled: false,
       running: false,
@@ -202,20 +211,18 @@ export async function insertImageFiles(
     return
   }
 
-  for (const task of tasks) {
-    tasksFor(view).set(task.id, task)
-    void runUpload(task)
-  }
+  for (const task of tasks) tasksFor(view).set(task.id, task)
+  pumpQueue(view)
 }
 
-/** Replaces an existing image with optimistic upload UI. */
+/** Replaces an existing image with optimistic preparation/upload UI. */
 export function startImageReplacement(
   view: EditorView,
   pos: number,
   file: File,
-  services: ImageServices,
+  services?: ImageServices | null,
 ): void {
-  if (!services.uploader || view.isDestroyed) return
+  if (view.isDestroyed) return
   const node = view.state.doc.nodeAt(pos)
   if (!node || node.type.name !== 'image') return
 
@@ -230,8 +237,8 @@ export function startImageReplacement(
     previewUrl,
     alt,
     mode: 'replace',
-    uploader: services.uploader,
-    onUploadError: services.onUploadError,
+    uploader: services?.uploader,
+    onUploadError: services?.onUploadError,
     controller: null,
     cancelled: false,
     running: false,
@@ -241,7 +248,7 @@ export function startImageReplacement(
     .setNodeMarkup(pos, undefined, {
       ...node.attrs,
       uploadId: id,
-      uploadState: 'preparing',
+      uploadState: 'queued',
       uploadProgress: 0,
       uploadError: null,
       uploadPreview: previewUrl,
@@ -251,7 +258,7 @@ export function startImageReplacement(
   view.dispatch(tr)
 
   tasksFor(view).set(id, task)
-  void runUpload(task)
+  pumpQueue(view)
 }
 
 export function cancelImageUpload(view: EditorView, id: string): void {
@@ -269,7 +276,11 @@ export function cancelImageUpload(view: EditorView, id: string): void {
     if (node && node.type.name === 'image') {
       if (task.mode === 'insert') {
         const tr = view.state.tr.delete(pos, pos + node.nodeSize)
-        tr.setSelection(TextSelection.near(tr.doc.resolve(Math.min(pos, tr.doc.content.size))))
+        tr.setSelection(
+          TextSelection.near(
+            tr.doc.resolve(Math.min(pos, tr.doc.content.size)),
+          ),
+        )
         tr.setMeta(SKIP_CONTENT_META, true)
         tr.setMeta('addToHistory', false)
         view.dispatch(tr)
@@ -286,6 +297,7 @@ export function cancelImageUpload(view: EditorView, id: string): void {
   }
 
   URL.revokeObjectURL(task.previewUrl)
+  pumpQueue(view)
 }
 
 export function retryImageUpload(view: EditorView, id: string): void {
@@ -300,15 +312,19 @@ export function retryImageUpload(view: EditorView, id: string): void {
   updateUploadNode(
     view,
     id,
-    { uploadState: 'preparing', uploadProgress: 0, uploadError: null },
+    { uploadState: 'queued', uploadProgress: 0, uploadError: null },
     true,
   )
-  void runUpload(task)
+  pumpQueue(view)
 }
 
 async function runUpload(task: UploadTask): Promise<void> {
   const { view } = task
-  if (task.cancelled || view.isDestroyed) return
+  if (task.cancelled || view.isDestroyed) {
+    activeFor(view).delete(task.id)
+    pumpQueue(view)
+    return
+  }
   task.running = true
 
   try {
@@ -321,9 +337,17 @@ async function runUpload(task: UploadTask): Promise<void> {
 
     const prepared = task.prepared ?? (await prepareImageFile(task.file))
     if (task.cancelled || view.isDestroyed) return
-    if (!prepared) throw new Error('That image could not be prepared for upload.')
+    if (!prepared) throw new Error('That image could not be prepared.')
     task.prepared = prepared
     task.alt = prepared.alt
+
+    if (!task.uploader) {
+      // Local fallback: same optimistic shell, no network step.
+      const src = await readPreparedImage(prepared)
+      if (task.cancelled || view.isDestroyed) return
+      commitFinalImage(view, task, src, prepared.alt)
+      return
+    }
 
     if (!updateUploadNode(view, task.id, { uploadState: 'uploading' }, true)) {
       cleanupTask(task)
@@ -363,62 +387,7 @@ async function runUpload(task: UploadTask): Promise<void> {
     const result: UploadedImage =
       typeof uploaded === 'string' ? { src: uploaded } : uploaded
     if (!result.src) throw new Error('The image upload did not return a URL.')
-
-    const pos = findUploadPos(view, task.id)
-    if (pos === null) {
-      cleanupTask(task)
-      return
-    }
-    const node = view.state.doc.nodeAt(pos)
-    if (!node || node.type.name !== 'image') {
-      cleanupTask(task)
-      return
-    }
-    const alt = result.alt ?? prepared.alt
-
-    if (task.mode === 'insert') {
-      const finalNode = node.type.create({
-        ...node.attrs,
-        src: result.src,
-        alt,
-        title: alt,
-        ...CLEAR_UPLOAD,
-      })
-      // Remove the transient placeholder without polluting history, then add
-      // the real image as one undoable insertion.
-      const remove = view.state.tr
-        .delete(pos, pos + node.nodeSize)
-        .setMeta(SKIP_CONTENT_META, true)
-        .setMeta('addToHistory', false)
-      view.dispatch(remove)
-      const insertPos = Math.min(pos, view.state.doc.content.size)
-      const insert = view.state.tr.insert(insertPos, finalNode)
-      insert.setSelection(
-        TextSelection.near(
-          insert.doc.resolve(
-            Math.min(insertPos + finalNode.nodeSize, insert.doc.content.size),
-          ),
-        ),
-      )
-      view.dispatch(insert.scrollIntoView())
-    } else {
-      // Put the old image back briefly (non-history), then replace it in one
-      // undoable step. Undo restores the previous image, redo shows the new one.
-      const oldAttrs = { ...node.attrs, ...CLEAR_UPLOAD }
-      const clear = view.state.tr
-        .setNodeMarkup(pos, undefined, oldAttrs)
-        .setMeta(SKIP_CONTENT_META, true)
-        .setMeta('addToHistory', false)
-      view.dispatch(clear)
-      const finalAttrs = {
-        ...oldAttrs,
-        src: result.src,
-        alt,
-        title: alt,
-      }
-      view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, finalAttrs))
-    }
-    cleanupTask(task)
+    commitFinalImage(view, task, result.src, result.alt ?? prepared.alt)
   } catch (error) {
     if (task.cancelled) return
     const message =
@@ -438,7 +407,72 @@ async function runUpload(task: UploadTask): Promise<void> {
     }
   } finally {
     task.running = false
+    activeFor(view).delete(task.id)
+    pumpQueue(view)
   }
+}
+
+function commitFinalImage(
+  view: EditorView,
+  task: UploadTask,
+  src: string,
+  alt: string,
+): void {
+  const pos = findUploadPos(view, task.id)
+  if (pos === null) {
+    cleanupTask(task)
+    return
+  }
+  const node = view.state.doc.nodeAt(pos)
+  if (!node || node.type.name !== 'image') {
+    cleanupTask(task)
+    return
+  }
+
+  if (task.mode === 'insert') {
+    const finalNode = node.type.create({
+      ...node.attrs,
+      src,
+      alt,
+      title: alt,
+      ...CLEAR_UPLOAD,
+    })
+    // Remove the transient placeholder without polluting history, then add the
+    // real image as one undoable insertion.
+    const remove = view.state.tr
+      .delete(pos, pos + node.nodeSize)
+      .setMeta(SKIP_CONTENT_META, true)
+      .setMeta('addToHistory', false)
+    view.dispatch(remove)
+    const insertPos = Math.min(pos, view.state.doc.content.size)
+    const insert = view.state.tr.insert(insertPos, finalNode)
+    insert.setSelection(
+      TextSelection.near(
+        insert.doc.resolve(
+          Math.min(insertPos + finalNode.nodeSize, insert.doc.content.size),
+        ),
+      ),
+    )
+    view.dispatch(insert.scrollIntoView())
+  } else {
+    // Put the old image back briefly (non-history), then replace it in one
+    // undoable step. Undo restores the previous image, redo shows the new one.
+    const oldAttrs = { ...node.attrs, ...CLEAR_UPLOAD }
+    const clear = view.state.tr
+      .setNodeMarkup(pos, undefined, oldAttrs)
+      .setMeta(SKIP_CONTENT_META, true)
+      .setMeta('addToHistory', false)
+    view.dispatch(clear)
+    const finalAttrs = {
+      ...oldAttrs,
+      src,
+      alt,
+      title: alt,
+    }
+    view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, finalAttrs))
+  }
+
+  cleanupTask(task)
 }
 
 export function cleanupImageUploads(view: EditorView): void {
@@ -449,4 +483,5 @@ export function cleanupImageUploads(view: EditorView): void {
     URL.revokeObjectURL(task.previewUrl)
   }
   tasks.clear()
+  activeFor(view).clear()
 }

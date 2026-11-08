@@ -10,7 +10,7 @@ import {
 import { createPortal } from 'react-dom'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import type { Node as PMNode } from '@tiptap/pm/model'
-import { pickImageFile, pickImageFileRaw } from '../../editor/images/imageFiles'
+import { pickImageFileRaw } from '../../editor/images/imageFiles'
 import { getImageServices } from '../../editor/images/imageServices'
 import {
   cancelImageUpload,
@@ -198,19 +198,11 @@ export function ImageBlockView({
   }
 
   const replace = () => {
-    const services = getImageServices(editor)
-    if (services?.uploader) {
-      void pickImageFileRaw().then((file) => {
-        if (!file || editor.isDestroyed) return
-        const pos = getPos()
-        if (typeof pos !== 'number') return
-        startImageReplacement(editor.view, pos, file, services)
-      })
-      return
-    }
-    void pickImageFile(services).then((image) => {
-      if (!image || editor.isDestroyed) return
-      updateAttributes({ src: image.src, alt: image.alt })
+    void pickImageFileRaw().then((file) => {
+      if (!file || editor.isDestroyed) return
+      const pos = getPos()
+      if (typeof pos !== 'number') return
+      startImageReplacement(editor.view, pos, file, getImageServices(editor))
     })
   }
 
@@ -422,11 +414,13 @@ export function ImageBlockView({
             ) : (
               <>
                 <div className="image-upload-overlay__title">
-                  {uploadState === 'preparing'
-                    ? 'Preparing image…'
-                    : uploadProgress > 0
-                      ? `Uploading ${uploadProgress}%`
-                      : 'Uploading…'}
+                  {uploadState === 'queued'
+                    ? 'Waiting…'
+                    : uploadState === 'preparing'
+                      ? 'Preparing image…'
+                      : uploadProgress > 0
+                        ? `Uploading ${uploadProgress}%`
+                        : 'Uploading…'}
                 </div>
                 <div
                   className="image-upload-overlay__track"
