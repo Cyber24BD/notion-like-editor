@@ -34,6 +34,8 @@ Playwright starts Vite on port `5199` and uses:
   fallback and undo/redo)
 - `/preset-harness.html?preset=…` — direct smoke tests for `core`, `standard`,
   `core-external` and `standard-external` entries
+- Page cover, find/replace, shortcuts, mobile toolbars and sidebar drag/reorder
+  are covered in `tests/e2e/p2.spec.ts`
 
 Useful commands:
 

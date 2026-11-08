@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Page } from '../types'
 import type { ThemeApi } from '../hooks/useTheme'
 import { Menu, type MenuNode } from './Menu'
+import { formatShortcut } from '../editor/shortcuts'
 import {
   ChevronRight,
   Copy,
@@ -23,6 +24,7 @@ interface TopBarProps {
   onDuplicate: () => void
   onExport: () => void
   onDelete: () => void
+  onShowShortcuts: () => void
   theme: ThemeApi
 }
 
@@ -35,9 +37,13 @@ export function TopBar({
   onDuplicate,
   onExport,
   onDelete,
+  onShowShortcuts,
   theme,
 }: TopBarProps) {
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const isMac =
+    typeof navigator !== 'undefined' &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform)
   const [copied, setCopied] = useState(false)
 
   const share = async () => {
@@ -68,6 +74,13 @@ export function TopBar({
       label: 'Copy page link',
       icon: <Share size={15} />,
       onSelect: () => void share(),
+    },
+    {
+      id: 'shortcuts',
+      label: 'Keyboard shortcuts',
+      icon: <FileText size={15} />,
+      shortcut: formatShortcut('Mod+/', isMac),
+      onSelect: onShowShortcuts,
     },
     { type: 'separator', id: 'sep' },
     {

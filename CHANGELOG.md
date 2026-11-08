@@ -11,6 +11,11 @@
 - Added browser coverage for core, standard, core/external and standard/external presets.
 - Deduplicated identical preset/external lazy chunks before packing (tarball ~2.5 MB instead of ~5.6 MB).
 - Upgraded editor KaTeX to 0.19.1; the remaining low advisory is Mermaid's internal KaTeX copy and is documented.
+- Added page covers with upload/change/remove and vertical focal-point dragging.
+- Added drag-to-reorder and drag-to-nest pages in the sidebar with cycle protection.
+- Added in-page find/replace with match highlighting and replace-all.
+- Added a complete keyboard shortcuts dialog and shortcut documentation.
+- Polished image/table toolbars on narrow screens with a fixed bottom action bar.
 
 ## 1.1.0
 

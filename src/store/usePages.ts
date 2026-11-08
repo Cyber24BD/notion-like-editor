@@ -83,11 +83,19 @@ function loadWorkspace(): WorkspaceState {
   }
 }
 
+function pageOrder(page: Page): number {
+  return page.order ?? page.createdAt
+}
+
+function pageSort(a: Page, b: Page): number {
+  return pageOrder(a) - pageOrder(b) || a.createdAt - b.createdAt
+}
+
 export function buildPageTree(pages: PageMap): PageTreeNode[] {
   const childrenOf = (parentId: string | null): Page[] =>
     Object.values(pages)
       .filter((page) => page.parentId === parentId)
-      .sort((a, b) => a.createdAt - b.createdAt)
+      .sort(pageSort)
 
   const walk = (parentId: string | null, depth: number): PageTreeNode[] =>
     childrenOf(parentId).map((page) => ({
@@ -151,9 +159,14 @@ export interface WorkspaceApi {
     content?: JSONContent | null,
     activate?: boolean,
   ) => string
-  updatePage: (id: string, patch: Partial<Pick<Page, 'title' | 'icon' | 'parentId'>>) => void
+  updatePage: (
+    id: string,
+    patch: Partial<Pick<Page, 'title' | 'icon' | 'cover' | 'coverPosition' | 'parentId'>>,
+  ) => void
   setContent: (id: string, content: JSONContent) => void
   deletePage: (id: string) => void
+  /** Move a page before `beforeId` under `parentId`; null appends. */
+  movePage: (id: string, parentId: string | null, beforeId: string | null) => void
   duplicatePage: (id: string) => string | null
   resetWorkspace: () => void
   storageError: boolean
@@ -202,7 +215,10 @@ export function useWorkspace(): WorkspaceApi {
             id,
             title,
             icon: '📄',
+            cover: '',
+            coverPosition: 50,
             parentId,
+            order: now,
             content,
             createdAt: now,
             updatedAt: now,
@@ -216,7 +232,10 @@ export function useWorkspace(): WorkspaceApi {
   )
 
   const updatePage = useCallback(
-    (id: string, patch: Partial<Pick<Page, 'title' | 'icon' | 'parentId'>>) => {
+    (
+      id: string,
+      patch: Partial<Pick<Page, 'title' | 'icon' | 'cover' | 'coverPosition' | 'parentId'>>,
+    ) => {
       setState((prev) => {
         const page = prev.pages[id]
         if (!page) return prev
@@ -271,7 +290,10 @@ export function useWorkspace(): WorkspaceApi {
           id: freshId,
           title: '',
           icon: '📄',
+          cover: '',
+          coverPosition: 50,
           parentId: null,
+          order: now,
           content: null,
           createdAt: now,
           updatedAt: now,
@@ -281,6 +303,43 @@ export function useWorkspace(): WorkspaceApi {
       return { pages, activeId }
     })
   }, [])
+
+  const movePage = useCallback(
+    (id: string, parentId: string | null, beforeId: string | null) => {
+      setState((prev) => {
+        const page = prev.pages[id]
+        if (!page) return prev
+        if (parentId !== null && (!prev.pages[parentId] || parentId === id)) {
+          return prev
+        }
+        if (parentId !== null && descendantIds(prev.pages, id).includes(parentId)) {
+          return prev
+        }
+
+        const siblings = Object.values(prev.pages)
+          .filter((candidate) => candidate.id !== id && candidate.parentId === parentId)
+          .sort(pageSort)
+        const beforeIndex =
+          beforeId === null
+            ? siblings.length
+            : siblings.findIndex((candidate) => candidate.id === beforeId)
+        const insertAt = beforeIndex === -1 ? siblings.length : beforeIndex
+        siblings.splice(insertAt, 0, page)
+
+        const pages = { ...prev.pages }
+        siblings.forEach((sibling, index) => {
+          pages[sibling.id] = {
+            ...sibling,
+            parentId,
+            order: index + 1,
+            updatedAt: sibling.id === id ? Date.now() : sibling.updatedAt,
+          }
+        })
+        return { ...prev, pages }
+      })
+    },
+    [],
+  )
 
   const duplicatePage = useCallback(
     (id: string) => {
@@ -297,6 +356,7 @@ export function useWorkspace(): WorkspaceApi {
               ...source,
               id: newId,
               title: source.title ? `${source.title} (copy)` : 'Untitled',
+              order: now,
               content: source.content
                 ? (JSON.parse(JSON.stringify(source.content)) as JSONContent)
                 : null,
@@ -334,6 +394,7 @@ export function useWorkspace(): WorkspaceApi {
     updatePage,
     setContent,
     deletePage,
+    movePage,
     duplicatePage,
     resetWorkspace,
     storageError,

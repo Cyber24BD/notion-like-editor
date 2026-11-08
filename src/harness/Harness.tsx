@@ -151,6 +151,8 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
 export function Harness() {
   const [title, setTitle] = useState('Harness document')
+  const [cover, setCover] = useState('')
+  const [coverPosition, setCoverPosition] = useState(50)
   const [content, setContent] = useState<JSONContent | VersionedContent | null>(
     (() => {
       const params = new URLSearchParams(window.location.search)
@@ -273,8 +275,12 @@ export function Harness() {
           documentId="harness"
           title={title}
           icon="🧪"
+          cover={cover}
+          coverPosition={coverPosition}
           value={content}
           onTitleChange={setTitle}
+          onCoverChange={setCover}
+          onCoverPositionChange={setCoverPosition}
           onContentChange={(next) => {
             setContent(next)
             setEdits((value) => value + 1)

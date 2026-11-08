@@ -22,6 +22,7 @@ import { BlockMath } from './nodes/BlockMath'
 import { Mermaid } from './nodes/Mermaid'
 import { Chart } from './nodes/Chart'
 import { BlockRange } from './nodes/BlockRange'
+import { NotionSearch } from './search/NotionSearch'
 import { SlashCommand } from './slash/SlashCommand'
 import { slashItems } from './slash/items'
 import { resolveEditorFeatures, type EditorFeatures } from './features'
@@ -59,6 +60,7 @@ export function createExtensions(
       },
     }),
     BlockRange,
+    NotionSearch,
     Placeholder.configure({
       showOnlyCurrent: true,
       showOnlyWhenEditable: true,

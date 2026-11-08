@@ -99,6 +99,12 @@ export const ChevronDown = (p: IconProps) => (
   </Svg>
 )
 
+export const ChevronUp = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m18 15-6-6-6 6" />
+  </Svg>
+)
+
 export const Search = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="7" />

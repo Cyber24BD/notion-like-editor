@@ -3,6 +3,7 @@ import type { PageTreeNode } from '../types'
 import type { WorkspaceApi } from '../store/usePages'
 import type { ThemeApi } from '../hooks/useTheme'
 import { Menu, type MenuNode } from './Menu'
+import { formatShortcut } from '../editor/shortcuts'
 import {
   Check,
   ChevronDown,
@@ -29,30 +30,44 @@ interface SidebarProps {
   theme: ThemeApi
 }
 
+type DropPosition = 'before' | 'after' | 'inside'
+
 interface TreeItemProps {
   node: PageTreeNode
   activeId: string
+  nextSiblingId: string | null
   onSelect: (id: string) => void
   onRename: (id: string, title: string) => void
   onDuplicate: (id: string) => void
   onDelete: (id: string) => void
   onCreateChild: (parentId: string) => void
+  onMove: (id: string, parentId: string | null, beforeId: string | null) => void
 }
 
 function TreeItem({
   node,
   activeId,
+  nextSiblingId,
   onSelect,
   onRename,
   onDuplicate,
   onDelete,
   onCreateChild,
+  onMove,
 }: TreeItemProps) {
   const [expanded, setExpanded] = useState(true)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(node.title)
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const [dropPosition, setDropPosition] = useState<DropPosition | null>(null)
+  const dropPositionRef = useRef<DropPosition | null>(null)
+  const [dragging, setDragging] = useState(false)
   const cancelledRef = useRef(false)
+
+  const updateDropPosition = (position: DropPosition | null) => {
+    dropPositionRef.current = position
+    setDropPosition(position)
+  }
 
   useEffect(() => {
     if (node.children.length > 0) setExpanded(true)
@@ -69,6 +84,52 @@ function TreeItem({
       return
     }
     if (draft !== node.title) onRename(node.id, draft)
+  }
+
+  const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
+    if (editing) {
+      event.preventDefault()
+      return
+    }
+    event.stopPropagation()
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('application/x-notion-page', node.id)
+    event.dataTransfer.setData('text/plain', node.id)
+    setDragging(true)
+  }
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    if (editing) return
+    event.preventDefault()
+    event.stopPropagation()
+    event.dataTransfer.dropEffect = 'move'
+    const rect = event.currentTarget.getBoundingClientRect()
+    const offset = (event.clientY - rect.top) / Math.max(1, rect.height)
+    updateDropPosition(offset < 0.25 ? 'before' : offset > 0.75 ? 'after' : 'inside')
+  }
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+      updateDropPosition(null)
+    }
+  }
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const id =
+      event.dataTransfer.getData('application/x-notion-page') ||
+      event.dataTransfer.getData('text/plain')
+    const position = dropPositionRef.current
+    updateDropPosition(null)
+    setDragging(false)
+    if (!id || id === node.id || !position) return
+    if (position === 'inside') {
+      setExpanded(true)
+      onMove(id, node.id, null)
+      return
+    }
+    onMove(id, node.parentId, position === 'before' ? node.id : nextSiblingId)
   }
 
   const entries: MenuNode[] = [
@@ -105,6 +166,17 @@ function TreeItem({
       <div
         className="tree-row"
         data-active={node.id === activeId ? 'true' : 'false'}
+        data-drop={dropPosition ?? undefined}
+        data-dragging={dragging ? 'true' : undefined}
+        draggable={!editing}
+        onDragStart={handleDragStart}
+        onDragEnd={() => {
+          setDragging(false)
+          updateDropPosition(null)
+        }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         style={{ paddingLeft: 6 + node.depth * 14 }}
       >
         {node.children.length > 0 ? (
@@ -173,16 +245,18 @@ function TreeItem({
       </div>
 
       {expanded &&
-        node.children.map((child) => (
+        node.children.map((child, index) => (
           <TreeItem
             key={child.id}
             node={child}
             activeId={activeId}
+            nextSiblingId={node.children[index + 1]?.id ?? null}
             onSelect={onSelect}
             onRename={onRename}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
             onCreateChild={onCreateChild}
+            onMove={onMove}
           />
         ))}
 
@@ -209,6 +283,9 @@ export function Sidebar({
   theme,
 }: SidebarProps) {
   const [workspaceMenuAt, setWorkspaceMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const isMac =
+    typeof navigator !== 'undefined' &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
   const workspaceEntries: MenuNode[] = [
     {
@@ -233,6 +310,13 @@ export function Sidebar({
       onSelect: () => theme.setMode('system'),
     },
     { type: 'separator', id: 'theme-sep' },
+    {
+      id: 'shortcuts',
+      label: 'Keyboard shortcuts',
+      icon: <FileText size={15} />,
+      shortcut: formatShortcut('Mod+/', isMac),
+      onSelect: () => window.dispatchEvent(new Event('notion:shortcuts')),
+    },
     {
       id: 'reset',
       label: 'Reset demo workspace',
@@ -303,11 +387,12 @@ export function Sidebar({
           </div>
 
           <nav className="sidebar__tree" aria-label="Pages">
-            {workspace.tree.map((node) => (
+            {workspace.tree.map((node, index) => (
               <TreeItem
                 key={node.id}
                 node={node}
                 activeId={workspace.activeId}
+                nextSiblingId={workspace.tree[index + 1]?.id ?? null}
                 onSelect={(id) => {
                   workspace.setActive(id)
                   if (isMobile) onClose()
@@ -330,6 +415,7 @@ export function Sidebar({
                   workspace.createPage(parentId)
                   if (isMobile) onClose()
                 }}
+                onMove={workspace.movePage}
               />
             ))}
             {workspace.tree.length === 0 && (

@@ -141,6 +141,22 @@ export default function App() {
     [activePage, workspace],
   )
 
+  const handleCoverChange = useCallback(
+    (cover: string) => {
+      if (!activePage) return
+      workspace.updatePage(activePage.id, { cover })
+    },
+    [activePage, workspace],
+  )
+
+  const handleCoverPositionChange = useCallback(
+    (coverPosition: number) => {
+      if (!activePage) return
+      workspace.updatePage(activePage.id, { coverPosition })
+    },
+    [activePage, workspace],
+  )
+
   const handleContentChange = useCallback(
     (content: Parameters<typeof workspace.setContent>[1]) => {
       if (!activePage) return
@@ -191,6 +207,9 @@ export default function App() {
               onDuplicate={handleDuplicate}
               onExport={handleExport}
               onDelete={handleDeleteActive}
+              onShowShortcuts={() =>
+                window.dispatchEvent(new Event('notion:shortcuts'))
+              }
               theme={theme}
             />
             <NotionEditor
@@ -198,9 +217,13 @@ export default function App() {
               documentId={activePage.id}
               title={activePage.title}
               icon={activePage.icon}
+              cover={activePage.cover}
+              coverPosition={activePage.coverPosition}
               content={activePage.content}
               onTitleChange={handleTitleChange}
               onIconChange={handleIconChange}
+              onCoverChange={handleCoverChange}
+              onCoverPositionChange={handleCoverPositionChange}
               onContentChange={handleContentChange}
               onNavigatePage={handleNavigate}
               onCreateSubPage={handleCreateSubPage}

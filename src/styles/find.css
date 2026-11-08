@@ -1,0 +1,128 @@
+/* ------------------------------------------------------------------ *
+ * Find and replace                                                   *
+ * ------------------------------------------------------------------ */
+
+.find-bar {
+  position: fixed;
+  top: calc(var(--topbar-h) + 10px);
+  right: 16px;
+  z-index: var(--z-popover);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(460px, calc(100vw - 32px));
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.find-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.find-bar__row--replace {
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.find-bar__search-icon {
+  flex: none;
+  color: var(--text-tertiary);
+}
+
+.find-bar__input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.find-bar__input:focus {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+
+.find-bar__input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.find-bar__count {
+  flex: none;
+  min-width: 54px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.find-bar__nav {
+  display: flex;
+  gap: 1px;
+}
+
+.find-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: 26px;
+  min-width: 26px;
+  padding: 0 5px;
+  border-radius: var(--radius-xs);
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.find-bar__btn:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.find-bar__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.find-bar__btn--text {
+  padding: 0 7px;
+  font-weight: 500;
+}
+
+.find-bar__btn[aria-pressed='true'] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.search-match {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.search-match--current {
+  background: color-mix(in srgb, var(--accent) 58%, transparent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+@media (max-width: 640px) {
+  .find-bar {
+    top: calc(var(--topbar-h) + 6px);
+    right: 8px;
+    width: calc(100vw - 16px);
+  }
+
+  .find-bar__count {
+    min-width: 44px;
+  }
+}

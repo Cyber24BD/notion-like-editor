@@ -2,6 +2,9 @@
 @import './tokens.css';
 @import './base.css';
 @import '../styles/editor.css';
+@import '../styles/cover.css';
+@import '../styles/find.css';
+@import '../styles/shortcuts.css';
 @import '../styles/image.css';
 @import '../styles/lightbox.css';
 @import '../styles/video.css';

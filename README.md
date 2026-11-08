@@ -51,6 +51,8 @@ import '@cyber24bd/notion-like-editor/style.css'
 export function MyPage() {
   const [title, setTitle] = useState('My document')
   const [content, setContent] = useState<JSONContent | null>(null)
+  const [cover, setCover] = useState('')
+  const [coverPosition, setCoverPosition] = useState(50)
   const editor = useRef<NotionEditorHandle>(null)
 
   return (
@@ -60,8 +62,12 @@ export function MyPage() {
         documentId="doc-1"
         title={title}
         icon="📝"
+        cover={cover}
+        coverPosition={coverPosition}
         value={content}
         onTitleChange={setTitle}
+        onCoverChange={setCover}
+        onCoverPositionChange={setCoverPosition}
         onContentChange={setContent}
         uploadImage={async (file) => {
           const form = new FormData()
@@ -114,13 +120,13 @@ const [document, setDocument] = useState<VersionedContent>(() =>
   - `/external` variants of the above — host supplies Tiptap
   - `style.css`, `core.css`, `standard.css` — matching scoped styles
 - **Tiptap is a peer dependency:** install one Tiptap 3.33+ stack in the host. The `/external` entries import the host's `@tiptap/*` and `prosemirror-*` modules instead of shipping a second copy, which is required for a single ProseMirror schema/selection identity.
-- **Core/standard JS is genuinely smaller:** the preset builds use separate extension factories and CSS entries, not just runtime flags. For example, the external core entry is ~107 KB vs ~359 KB for external full; core CSS is ~53 KB vs ~120 KB full.
+- **Core/standard JS is genuinely smaller:** the preset builds use separate extension factories and CSS entries, not just runtime flags. For example, the external core entry is ~123 KB vs ~375 KB for external full; core CSS is ~62 KB vs ~129 KB full.
 - **Feature presets / custom extensions:** `CORE_FEATURES`, `STANDARD_FEATURES` and `FULL_FEATURES` restrict which optional blocks are registered and shown in the slash menu. Pass `features` and/or `extensions` to `NotionEditor`. These are **mount-time** content capabilities; runtime flags do not tree-shake the bundle, and existing documents containing disabled nodes need migration before mounting.
 - **Optional callbacks:** `onIconChange`, `onNavigatePage` / `onCreateSubPage` for page links.
 - **Presentation props:** `editable`, `showHeader`, `showBubbleToolbar`, `showTableToolbar`, `className`.
 - **Scoped styles:** the library stylesheet is scoped to `.notion-editor-root`; dialogs/toolbars are wrapped in the same scope. It no longer resets your host `body`/`:root`, and generic button/menu/popover/page classes are prefixed with `notion-` so host rules cannot collide. Set `data-theme="dark"` on `<html>` for dark mode, or override the scoped CSS variables.
 - **Math styles:** math blocks use KaTeX. The core stylesheet no longer bundles KaTeX’s font files; if you use math, import `katex/dist/katex.min.css` once in your app. The demo already does this.
-- **Bundle shape:** the scoped library stylesheet is ~119 KB on disk (down from ~1.5 MB with KaTeX fonts). Bundled full JS is ~1.21 MB minified; the external full entry is ~359 KB, external core ~107 KB and external standard ~319 KB. The preset entries are the weight lever; the default full entry remains a single bundled stack.
+- **Bundle shape:** the scoped library stylesheet is ~129 KB on disk (down from ~1.5 MB with KaTeX fonts). Bundled full JS is ~1.23 MB minified; the external full entry is ~375 KB, external core ~123 KB and external standard ~335 KB. The preset entries are the weight lever; the default full entry remains a single bundled stack.
 - **Package size:** `build:lib` deduplicates identical lazy chunks shared by the preset/external builds before packing. This keeps the installed package from carrying several copies of Mermaid, KaTeX and dialog code.
 - **Types** are included at `dist-lib/lib/index.d.ts`; the package exports `./style.css`.
 
@@ -137,6 +143,10 @@ The demo app (`src/App.tsx`, `src/store`) is separate from the library entry and
 - Paragraphs, heading 1–3, bulleted / numbered / to-do lists, toggle lists, quotes, dividers, callouts (with emoji picker), code blocks (syntax highlighted via lowlight with auto-detection, a language picker, copy, line numbers, word wrap, fixed-height scrolling, height presets and download), tables (resizable; header row/column; insert/delete rows and columns; select row, column or table; merge/split cells), images (upload, paste or drop — then resize, crop, restyle, caption, replace and delete, plus a fullscreen lightbox with zoom, pan, gallery navigation, copy, download, open original and fullscreen mode), video embeds (YouTube, Vimeo, Loom, Dailymotion, Wistia, Twitch and direct MP4/WebM files with paste-to-embed, aspect ratios, sizing, start time, autoplay and privacy mode), audio embeds (Spotify, SoundCloud, Apple Podcasts, Apple Music, Mixcloud, Deezer, Tidal and direct MP3/WAV/OGG/M4A/AAC/FLAC/OPUS/WebM files with paste-to-embed, provider detection, sizing, height presets and captions), iframe embeds (any http(s) URL or `<iframe>` snippet — maps, forms, Figma, CodePen, dashboards and widgets — with live preview, width/height resizing, alignment, captions and fullscreen control), bookmark/link preview cards (favicon, title, description, domain and preview image with a fallback card when metadata is unavailable), table of contents blocks (auto-generated from H1–H3 with click-to-jump navigation), inline and block math equations (KaTeX with live preview, symbol palette, templates, copy LaTeX and click-to-edit), Mermaid diagrams (flowcharts, sequence diagrams, Gantt charts, class/state/ER diagrams, mindmaps, timelines, kanban, pie, journey, git graphs and more with live preview, themes, templates, SVG download, Mermaid Live export and fullscreen preview), charts (bar, line, area, pie, donut with an editable data table, palettes, heights, legend/grid/value/stacked options and hover tooltips), nested page links.
 - Inline: bold, italic, underline, strikethrough, inline code, links, plus text and highlight colors with theme-aware presets, a custom color picker and recent colors.
 - **Multi-block selection:** shift-click blocks or block handles to select a range; the drag handle moves the whole range; `⌘/Ctrl+D` duplicates, `⌘/Ctrl+C` copies, `Delete`/`Backspace` removes and `Escape` clears. Each group action is a single undo step.
+- **Page cover:** add or change a cover image from the header, drag vertically to choose the focal point, remove it, and persist its position. Cover uploads use the same optimized image pipeline and `uploadImage` adapter as inline images.
+- **Sidebar page organization:** drag pages before or after siblings, or onto a page to nest it. The move is cycle-safe and updates the persisted tree order.
+- **Find and replace:** `⌘/Ctrl+F` opens an in-page find bar with match highlighting, previous/next navigation and `⌘/Ctrl+H` replace mode with replace-one and replace-all.
+- **Keyboard shortcuts dialog:** press `⌘/Ctrl+/` or choose **Keyboard shortcuts** from the page/workspace menu to see the full shortcut map.
 - Markdown input rules (e.g. `# `, `- `, `1. `, `> `, `` ` ``, `---`) from StarterKit + Typography.
 
 **Notion UI**
@@ -156,18 +166,25 @@ The demo app (`src/App.tsx`, `src/store`) is separate from the library entry and
 - Touch devices hide the hover handle, keep icon/action affordances visible, use ≥44px targets and stack the slash menu to the viewport.
 - Tables scroll horizontally, images and code never overflow, no horizontal page scroll at 320px.
 
-## Shortcuts
+## Keyboard shortcuts
+
+The in-app **Keyboard shortcuts** dialog is the source of truth. The main bindings are:
 
 | Shortcut | Action |
 | --- | --- |
-| `/` | Open the block menu |
-| `⌘/Ctrl + K` | Search pages |
-| `⌘/Ctrl + B / I / U` | Bold / italic / underline |
-| `⌘/Ctrl + Shift + M` | Toggle light & dark |
-| `⌘/Ctrl + Shift + S` | Strikethrough |
-| `Enter` (in title) | Jump into the page body |
-| `Tab` / `Shift + Tab` | Indent / outdent list items |
-| `↑` `↓` `Enter` `Esc` | Navigate any menu |
+| `⌘/Ctrl+F` | Find in page |
+| `⌘/Ctrl+H` | Find and replace |
+| `⌘/Ctrl+/` | Keyboard shortcuts |
+| `⌘/Ctrl+K` | Search pages (demo app) |
+| `⌘/Ctrl+B` / `I` / `U` | Bold / italic / underline |
+| `⌘/Ctrl+Shift+S` | Strikethrough |
+| `⌘/Ctrl+E` | Inline code |
+| `⌘/Ctrl+Shift+H` | Highlight |
+| `⌘/Ctrl+Alt+1/2/3` | Heading 1/2/3 |
+| `⌘/Ctrl+Shift+7/8/9` | Numbered / bulleted / to-do list |
+| `Shift+Click` | Select a block range |
+| `⌘/Ctrl+D` | Duplicate selected blocks |
+| `Delete` / `Escape` | Delete / clear a block range |
 
 ## Project layout
 

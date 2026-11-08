@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react'
 import type { Editor, Extensions, JSONContent } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
@@ -21,6 +22,7 @@ import {
 } from '../editor/features'
 import {
   imageFilesFromTransfer,
+  processImageFile,
   type ImageServices,
   type ImageUploader,
 } from '../editor/images/imageFiles'
@@ -59,6 +61,9 @@ import { MathDialogHost } from './MathDialogHost'
 import { MermaidDialogHost } from './MermaidDialogHost'
 import { LazyEmojiPicker, preloadFeatureDialogs } from './lazy/LazyWidgets'
 import { TableToolbar } from './TableToolbar'
+import { ImageIcon } from './Icons'
+import { FindReplaceBar, type FindMode } from './FindReplaceBar'
+import { ShortcutsDialog } from './ShortcutsDialog'
 
 const EMPTY_DOC: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
 
@@ -181,6 +186,9 @@ export interface NotionEditorProps {
   documentId: string
   title?: string
   icon?: string
+  cover?: string
+  /** Vertical focal point for the cover image, 0 (top) to 100 (bottom). */
+  coverPosition?: number
   content?: EditorContentInput | null
   /**
    * Controlled content. When supplied, external changes are applied without
@@ -193,6 +201,8 @@ export interface NotionEditorProps {
   onDocumentChange?: (document: VersionedContent) => void
   onTitleChange?: (title: string) => void
   onIconChange?: (icon: string) => void
+  onCoverChange?: (cover: string) => void
+  onCoverPositionChange?: (position: number) => void
   onContentChange?: (content: JSONContent) => void
   onNavigatePage?: (pageId: string) => void
   onCreateSubPage?: (title: string) => PageReference | null
@@ -220,12 +230,16 @@ function PageEditor({
   documentId,
   title = '',
   icon = '',
+  cover = '',
+  coverPosition = 50,
   content = null,
   value,
   migrations,
   onDocumentChange,
   onTitleChange,
   onIconChange,
+  onCoverChange,
+  onCoverPositionChange,
   onContentChange,
   onNavigatePage,
   onCreateSubPage,
@@ -249,9 +263,21 @@ function PageEditor({
     () => createExtensions({ features: resolvedFeatures, extensions: extraExtensions }),
     [featuresKey, extraExtensions],
   )
+  const rootRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLTextAreaElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const coverDragRef = useRef<{
+    startY: number
+    startPosition: number
+    height: number
+  } | null>(null)
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
+  const [coverBusy, setCoverBusy] = useState(false)
+  const [coverDragging, setCoverDragging] = useState(false)
+  const [findMode, setFindMode] = useState<FindMode | null>(null)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const safeCoverPosition = Math.max(0, Math.min(100, coverPosition))
 
   // Freeze the initial document so option churn never resets the editor.
   const initialInput = value !== undefined ? value : content
@@ -436,11 +462,39 @@ function PageEditor({
   }, [title])
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const root = rootRef.current
+      if (!root?.contains(document.activeElement)) return
+      const mod = event.metaKey || event.ctrlKey
+      if (!mod) return
+      const key = event.key.toLowerCase()
+      if (!event.shiftKey && key === 'f') {
+        event.preventDefault()
+        setFindMode('find')
+      } else if (!event.shiftKey && key === 'h') {
+        event.preventDefault()
+        setFindMode('replace')
+      } else if (key === '/' || event.code === 'Slash') {
+        event.preventDefault()
+        setShortcutsOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [])
+
+  useEffect(() => {
     if (showHeader && !title) {
       titleRef.current?.focus()
     }
     // Only on mount for a fresh page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const openShortcuts = () => setShortcutsOpen(true)
+    window.addEventListener('notion:shortcuts', openShortcuts)
+    return () => window.removeEventListener('notion:shortcuts', openShortcuts)
   }, [])
 
   const navigatePage = onNavigatePage ?? (() => undefined)
@@ -465,17 +519,148 @@ function PageEditor({
     }
   }
 
+  const chooseCover = () => {
+    coverInputRef.current?.click()
+  }
+
+  const handleCoverFile = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !onCoverChange) return
+    setCoverBusy(true)
+    try {
+      const picked = await processImageFile(file, servicesRef.current)
+      if (picked) onCoverChange(picked.src)
+    } finally {
+      setCoverBusy(false)
+    }
+  }
+
+  const handleCoverPointerDown = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (!onCoverPositionChange) return
+    const target = event.target as HTMLElement
+    if (target.closest('.notion-page-cover-actions')) return
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    coverDragRef.current = {
+      startY: event.clientY,
+      startPosition: safeCoverPosition,
+      height: Math.max(1, event.currentTarget.getBoundingClientRect().height),
+    }
+    setCoverDragging(true)
+  }
+
+  const handleCoverPointerMove = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    const drag = coverDragRef.current
+    if (!drag || !onCoverPositionChange) return
+    const next =
+      drag.startPosition + ((drag.startY - event.clientY) / drag.height) * 100
+    onCoverPositionChange(Math.max(0, Math.min(100, Math.round(next))))
+  }
+
+  const finishCoverDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!coverDragRef.current) return
+    coverDragRef.current = null
+    setCoverDragging(false)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
   return (
-    <div className="notion-editor-root">
-      <div className={`notion-page ${className}`.trim()}>
+    <div className="notion-editor-root" ref={rootRef}>
+      <div
+        className={`notion-page ${className}`.trim()}
+        data-cover={cover ? 'true' : 'false'}
+      >
+      <input
+        ref={coverInputRef}
+        className="notion-page-cover-input"
+        type="file"
+        accept="image/*"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(event) => void handleCoverFile(event)}
+      />
       <div
         className="notion-page-scroll notion-scroll"
         ref={setScrollEl}
         onClick={handleBackgroundClick}
       >
-        <div className="notion-page-content">
+        {cover && (
+          <div
+            className="notion-page-cover"
+            data-dragging={coverDragging ? 'true' : 'false'}
+            data-repositionable={onCoverPositionChange ? 'true' : 'false'}
+            onPointerDown={handleCoverPointerDown}
+            onPointerMove={handleCoverPointerMove}
+            onPointerUp={finishCoverDrag}
+            onPointerCancel={finishCoverDrag}
+          >
+            <img
+              className="notion-page-cover__image"
+              src={cover}
+              alt=""
+              draggable={false}
+              style={{ objectPosition: `center ${safeCoverPosition}%` }}
+            />
+            <div
+              className="notion-page-cover-actions"
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              {onCoverChange && (
+                <button
+                  type="button"
+                  className="notion-page-cover-action"
+                  disabled={coverBusy}
+                  onClick={chooseCover}
+                >
+                  {coverBusy ? 'Uploading…' : 'Change cover'}
+                </button>
+              )}
+              {onCoverPositionChange && (
+                <span className="notion-page-cover-hint">
+                  Drag to reposition
+                </span>
+              )}
+              {onCoverChange && (
+                <button
+                  type="button"
+                  className="notion-page-cover-action"
+                  onClick={() => {
+                    onCoverChange('')
+                    onCoverPositionChange?.(50)
+                  }}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+        <div
+          className="notion-page-content"
+          data-cover={cover ? 'true' : 'false'}
+        >
           {showHeader && (
           <div className="notion-page-header">
+            {onCoverChange && !cover && (
+              <button
+                type="button"
+                className="notion-page-add-cover"
+                disabled={coverBusy}
+                onClick={chooseCover}
+              >
+                <ImageIcon size={14} />
+                {coverBusy ? 'Uploading…' : 'Add cover'}
+              </button>
+            )}
             <div className="notion-page-icon-slot">
               {icon ? (
                 onIconChange ? (
@@ -555,6 +740,17 @@ function PageEditor({
           <div className="notion-page-bottom-spacer" aria-hidden="true" />
         </div>
       </div>
+      {editor && findMode && (
+        <FindReplaceBar
+          editor={editor}
+          mode={findMode}
+          onModeChange={setFindMode}
+          onClose={() => setFindMode(null)}
+        />
+      )}
+      {shortcutsOpen && (
+        <ShortcutsDialog onClose={() => setShortcutsOpen(false)} />
+      )}
       <SlashMenu />
       <VideoDialogHost />
       <AudioDialogHost />

@@ -11,6 +11,7 @@ import { ToggleBlock } from '../nodes/Toggle'
 import { PageLink } from '../nodes/PageLink'
 import { ImageBlock } from '../nodes/ImageBlock'
 import { BlockRange } from '../nodes/BlockRange'
+import { NotionSearch } from '../search/NotionSearch'
 import { SlashCommand } from '../slash/SlashCommand'
 import { slashItems } from '../slash/items'
 import { CORE_FEATURES, type EditorFeatures } from '../features'
@@ -47,6 +48,7 @@ export function buildCoreExtensions(
       },
     }),
     BlockRange,
+    NotionSearch,
     Placeholder.configure({
       showOnlyCurrent: true,
       showOnlyWhenEditable: true,
