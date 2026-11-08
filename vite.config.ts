@@ -6,6 +6,7 @@ export default defineConfig({
   resolve: {
     dedupe: [
       '@tiptap/pm',
+      '@tiptap/extension-node-range',
       'prosemirror-tables',
       'prosemirror-state',
       'prosemirror-model',

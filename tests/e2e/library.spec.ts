@@ -74,6 +74,145 @@ test('legacy versioned content migrates on mount', async ({ page }) => {
   expect(document?.version).toBe(1)
 })
 
+test('shift-click selects a block range and delete is one undo step', async ({
+  page,
+}) => {
+  await page.goto('/harness.html?multi=1')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+
+  await page.locator('.notion-editor p').nth(0).click()
+  await page.keyboard.down('Shift')
+  await page.locator('.notion-editor p').nth(2).click()
+  await page.keyboard.up('Shift')
+
+  await expect(page.locator('.ProseMirror-selectednoderange')).toHaveCount(3)
+  await expect(page.locator('.notion-editor')).toHaveClass(
+    /ProseMirror-noderangeselection/,
+  )
+
+  await page.keyboard.press('Delete')
+  await expect(page.locator('.notion-editor')).toContainText('Delta block')
+  await expect(page.locator('.notion-editor')).not.toContainText('Alpha block')
+  await expect(page.locator('.notion-editor > *')).toHaveCount(1)
+
+  await page.keyboard.press('Control+z')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+  await expect(page.locator('.notion-editor')).toContainText('Gamma block')
+  await expect(page.locator('.notion-editor > *')).toHaveCount(4)
+})
+
+test('duplicate and copy a block range', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/harness.html?multi=1')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+
+  await page.locator('.notion-editor p').nth(0).click()
+  await page.keyboard.down('Shift')
+  await page.locator('.notion-editor p').nth(1).click()
+  await page.keyboard.up('Shift')
+
+  await page.keyboard.press('Control+d')
+  await expect(page.locator('.notion-editor > *')).toHaveCount(6)
+  await expect(page.locator('.ProseMirror-selectednoderange')).toHaveCount(2)
+  await page.keyboard.press('Control+z')
+  await expect(page.locator('.notion-editor > *')).toHaveCount(4)
+
+  await page.locator('.notion-editor p').nth(0).click()
+  await page.keyboard.down('Shift')
+  await page.locator('.notion-editor p').nth(1).click()
+  await page.keyboard.up('Shift')
+  await page.keyboard.press('Control+c')
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toBe('Alpha block\nBeta block')
+
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.ProseMirror-selectednoderange')).toHaveCount(0)
+  await expect(page.locator('.notion-editor')).not.toHaveClass(
+    /ProseMirror-noderangeselection/,
+  )
+})
+
+test('drag handle moves a block range in one undo step', async ({ page }) => {
+  await page.goto('/harness.html?multi=1')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+
+  await page.locator('.notion-editor p').nth(0).click()
+  await page.keyboard.down('Shift')
+  await page.locator('.notion-editor p').nth(1).click()
+  await page.keyboard.up('Shift')
+
+  await page.locator('.notion-editor p').nth(0).hover()
+  await expect(page.locator('.drag-handle')).toHaveAttribute(
+    'data-visible',
+    'true',
+  )
+  await page
+    .locator('.drag-handle')
+    .dragTo(page.locator('.notion-editor p').nth(3), {
+      targetPosition: { x: 30, y: 10 },
+    })
+
+  await expect
+    .poll(() => page.locator('.notion-editor p').allInnerTexts())
+    .toEqual(['Gamma block', 'Alpha block', 'Beta block', 'Delta block'])
+
+  await page.keyboard.press('Control+z')
+  await expect
+    .poll(() => page.locator('.notion-editor p').allInnerTexts())
+    .toEqual(['Alpha block', 'Beta block', 'Gamma block', 'Delta block'])
+})
+
+test('shift-click on the handle extends the block range', async ({ page }) => {
+  await page.goto('/harness.html?multi=1')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+
+  await page.locator('.notion-editor p').nth(0).hover()
+  await expect(page.locator('.drag-handle')).toHaveAttribute(
+    'data-visible',
+    'true',
+  )
+  await page.locator('.block-handle__btn--grip').click()
+  await expect(page.locator('.menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.menu')).toHaveCount(0)
+
+  await page.locator('.notion-editor p').nth(2).hover()
+  await expect(page.locator('.drag-handle')).toHaveAttribute(
+    'data-visible',
+    'true',
+  )
+  await page.keyboard.down('Shift')
+  await page.locator('.block-handle__btn--grip').click()
+  await page.keyboard.up('Shift')
+
+  await expect(page.locator('.ProseMirror-selectednoderange')).toHaveCount(3)
+})
+
+test('block menu exposes group actions', async ({ page }) => {
+  await page.goto('/harness.html?multi=1')
+  await expect(page.locator('.notion-editor')).toContainText('Alpha block')
+
+  await page.locator('.notion-editor p').nth(0).click()
+  await page.keyboard.down('Shift')
+  await page.locator('.notion-editor p').nth(1).click()
+  await page.keyboard.up('Shift')
+
+  await page.locator('.notion-editor p').nth(0).hover()
+  await expect(page.locator('.drag-handle')).toHaveAttribute(
+    'data-visible',
+    'true',
+  )
+  await page.locator('.block-handle__btn--grip').click()
+
+  await expect(page.locator('.menu__label').filter({ hasText: 'Duplicate 2 blocks' })).toBeVisible()
+  await expect(page.locator('.menu__label').filter({ hasText: 'Delete 2 blocks' })).toBeVisible()
+  await expect(page.locator('.menu__label').filter({ hasText: 'Copy 2 blocks' })).toBeVisible()
+
+  await page.locator('.menu__label').filter({ hasText: 'Duplicate 2 blocks' }).click()
+  await expect(page.locator('.notion-editor > *')).toHaveCount(6)
+})
+
 test('failed upload shows inline retry, succeeds, and is undoable', async ({
   page,
 }, testInfo) => {

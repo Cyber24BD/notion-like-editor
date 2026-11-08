@@ -8,6 +8,7 @@ import { slashItems } from '../editor/slash/items'
 import { slashMenu } from '../editor/slash/menuStore'
 import { BlockMenu } from './BlockMenu'
 import { Grip, Plus } from './Icons'
+import { isBlockRangeSelection, selectBlockRange } from '../editor/nodes/BlockRange'
 
 interface BlockTarget {
   pos: number
@@ -24,6 +25,7 @@ export function BlockHandle({ editor }: BlockHandleProps) {
   const handleRef = useRef<HTMLDivElement>(null)
   const draggingRef = useRef(false)
   const targetRef = useRef<BlockTarget | null>(null)
+  const rangeAnchorRef = useRef<number | null>(null)
   const menuOpenRef = useRef(false)
   menuOpenRef.current = menuAt !== null
 
@@ -121,9 +123,27 @@ export function BlockHandle({ editor }: BlockHandleProps) {
   const openMenu = useCallback(() => {
     if (!target || draggingRef.current) return
     const rect = handleRef.current?.getBoundingClientRect()
-    editor.chain().focus().setNodeSelection(target.pos).run()
+    const selection = editor.state.selection
+    const rangeActive =
+      isBlockRangeSelection(editor) &&
+      selection.from <= target.pos &&
+      selection.to >= target.pos + target.node.nodeSize
+    if (!rangeActive) {
+      editor.chain().focus().setNodeSelection(target.pos).run()
+    }
     setMenuAt({ x: (rect?.right ?? 96) + 4, y: rect?.top ?? 96 })
   }, [editor, target])
+
+  const handleGripClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!target) return
+    if (event.shiftKey) {
+      const anchor = rangeAnchorRef.current ?? editor.state.selection.from
+      selectBlockRange(editor, anchor, target.pos)
+      return
+    }
+    rangeAnchorRef.current = target.pos
+    openMenu()
+  }
 
   return (
     <>
@@ -156,7 +176,7 @@ export function BlockHandle({ editor }: BlockHandleProps) {
             className="block-handle__btn block-handle__btn--grip"
             data-tooltip="Drag to move"
             aria-label="Drag or open block options"
-            onClick={openMenu}
+            onClick={handleGripClick}
           >
             <Grip size={14} />
           </button>

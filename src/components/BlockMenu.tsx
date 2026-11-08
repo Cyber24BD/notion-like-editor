@@ -4,6 +4,13 @@ import type { Node as PMNode } from '@tiptap/pm/model'
 import { Menu, type MenuEntry, type MenuNode } from './Menu'
 import { moveBlock, selectBlockContent } from './BlockHandle'
 import {
+  clearBlockRange,
+  copyBlockRange,
+  deleteBlockRange,
+  duplicateBlockRange,
+  isBlockRangeSelection,
+} from '../editor/nodes/BlockRange'
+import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
@@ -65,6 +72,12 @@ export function BlockMenu({ editor, target, x, y, onClose }: BlockMenuProps) {
   const index = doc.resolve(Math.min(pos, doc.content.size)).index(0)
   const canMoveUp = index > 0
   const canMoveDown = index < doc.childCount - 1
+  const selection = editor.state.selection
+  const rangeActive =
+    isBlockRangeSelection(editor) &&
+    selection.from <= pos &&
+    selection.to >= pos + node.nodeSize
+  const blockCount = rangeActive ? selection.ranges.length : 1
 
   const convert = (kind: TurnKind) => {
     if (node.isLeaf) return
@@ -114,6 +127,39 @@ export function BlockMenu({ editor, target, x, y, onClose }: BlockMenuProps) {
         break
     }
   }
+
+  const groupEntries: MenuNode[] = [
+    {
+      id: 'duplicate-range',
+      label: `Duplicate ${blockCount} blocks`,
+      icon: <Copy size={15} />,
+      shortcut: '⌘D',
+      onSelect: () => duplicateBlockRange(editor),
+    },
+    {
+      id: 'delete-range',
+      label: `Delete ${blockCount} blocks`,
+      icon: <Trash size={15} />,
+      shortcut: '⌫',
+      danger: true,
+      onSelect: () => deleteBlockRange(editor),
+    },
+    {
+      id: 'copy-range',
+      label: `Copy ${blockCount} blocks`,
+      icon: <Copy size={15} />,
+      shortcut: '⌘C',
+      onSelect: () => void copyBlockRange(editor),
+    },
+    { type: 'separator', id: 'sep-range' },
+    {
+      id: 'clear-range',
+      label: 'Clear selection',
+      icon: <Type size={15} />,
+      shortcut: 'Esc',
+      onSelect: () => clearBlockRange(editor),
+    },
+  ]
 
   const rootEntries: MenuNode[] = [
     {
@@ -188,8 +234,13 @@ export function BlockMenu({ editor, target, x, y, onClose }: BlockMenuProps) {
       x={x}
       y={y}
       width={view === 'turn' ? 236 : 228}
-      entries={view === 'turn' ? turnEntries : rootEntries}
+      entries={
+        view === 'turn' ? turnEntries : rangeActive ? groupEntries : rootEntries
+      }
       header={
+        rangeActive && view === 'root' ? (
+          <div className="menu__header">{blockCount} blocks selected</div>
+        ) :
         view === 'turn' ? (
           <button
             type="button"

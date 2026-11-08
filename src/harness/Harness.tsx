@@ -38,6 +38,16 @@ const EXTERNAL: JSONContent = {
   ],
 }
 
+const MULTI: JSONContent = {
+  type: 'doc',
+  content: ['Alpha block', 'Beta block', 'Gamma block', 'Delta block'].map(
+    (text) => ({
+      type: 'paragraph',
+      content: [{ type: 'text', text }],
+    }),
+  ),
+}
+
 const LEGACY: JSONContent = {
   type: 'doc',
   content: [
@@ -141,9 +151,12 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 export function Harness() {
   const [title, setTitle] = useState('Harness document')
   const [content, setContent] = useState<JSONContent | VersionedContent | null>(
-    new URLSearchParams(window.location.search).has('legacy')
-      ? { version: 0, content: LEGACY }
-      : INITIAL,
+    (() => {
+      const params = new URLSearchParams(window.location.search)
+      if (params.has('legacy')) return { version: 0, content: LEGACY }
+      if (params.has('multi')) return MULTI
+      return INITIAL
+    })(),
   )
   const [edits, setEdits] = useState(0)
   const [ready, setReady] = useState(false)

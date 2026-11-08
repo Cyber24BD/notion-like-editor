@@ -21,6 +21,7 @@ import { InlineMath } from './nodes/InlineMath'
 import { BlockMath } from './nodes/BlockMath'
 import { Mermaid } from './nodes/Mermaid'
 import { Chart } from './nodes/Chart'
+import { BlockRange } from './nodes/BlockRange'
 import { SlashCommand } from './slash/SlashCommand'
 
 export function createExtensions(): Extensions {
@@ -43,6 +44,7 @@ export function createExtensions(): Extensions {
         class: 'notion-drop-cursor',
       },
     }),
+    BlockRange,
     Placeholder.configure({
       showOnlyCurrent: true,
       showOnlyWhenEditable: true,

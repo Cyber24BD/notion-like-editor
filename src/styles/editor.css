@@ -209,6 +209,15 @@
   padding: 0;
 }
 
+.notion-editor .ProseMirror-selectednoderange {
+  background: var(--selection);
+  border-radius: 3px;
+}
+
+.notion-editor.ProseMirror-noderangeselection ::selection {
+  background: transparent;
+}
+
 .notion-editor hr.ProseMirror-selectednode {
   border-top-color: var(--accent);
 }
