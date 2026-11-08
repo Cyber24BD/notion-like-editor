@@ -66,6 +66,122 @@
   box-shadow: var(--shadow-md);
 }
 
+.image-block[data-upload-state] .image-block__frame img {
+  filter: saturate(0.92);
+}
+
+.image-upload-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  border-radius: var(--radius-xs);
+  background: rgba(18, 18, 18, 0.62);
+  backdrop-filter: blur(2px);
+  color: #fff;
+  line-height: 1.4;
+  text-align: center;
+  cursor: default;
+}
+
+.image-upload-overlay__title {
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.image-upload-overlay__message {
+  max-width: 340px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.image-upload-overlay__track {
+  position: relative;
+  width: min(240px, 72%);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.image-upload-overlay__track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+  transition: width 180ms var(--ease-out);
+}
+
+.image-upload-overlay__track[data-indeterminate='true'] span {
+  width: 36% !important;
+  animation: image-upload-slide 1.15s ease-in-out infinite;
+}
+
+@keyframes image-upload-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .image-upload-overlay__track span {
+    transition: none;
+  }
+
+  .image-upload-overlay__track[data-indeterminate='true'] span {
+    width: 100% !important;
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+.image-upload-overlay__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-upload-overlay .btn {
+  min-height: 28px;
+  padding: 3px 10px;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 12px;
+}
+
+.image-upload-overlay .btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.image-upload-overlay .btn--primary {
+  border-color: #fff;
+  background: #fff;
+  color: #1f1f1f;
+}
+
+.image-upload-overlay .btn--primary:hover:not(:disabled) {
+  background: #f1f1f1;
+}
+
+.image-upload-overlay .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.image-upload-overlay__cancel {
+  margin-top: 2px;
+}
+
 .image-block__handle {
   position: absolute;
   z-index: 5;

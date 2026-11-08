@@ -6,7 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { cropImageSource } from '../../editor/images/imageFiles'
+import { cropImageSource, type ImageServices } from '../../editor/images/imageFiles'
 import { X } from '../Icons'
 
 interface CropRect {
@@ -58,11 +58,12 @@ function clampCrop(
 
 interface CropDialogProps {
   src: string
+  services?: ImageServices | null
   onClose: () => void
   onApply: (src: string) => void
 }
 
-export function CropDialog({ src, onClose, onApply }: CropDialogProps) {
+export function CropDialog({ src, services, onClose, onApply }: CropDialogProps) {
   const [crop, setCrop] = useState<CropRect>(INITIAL_CROP)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -158,22 +159,26 @@ export function CropDialog({ src, onClose, onApply }: CropDialogProps) {
   const apply = useCallback(async () => {
     setBusy(true)
     setError(null)
-    const next = await cropImageSource(src, {
-      x: crop.x / 100,
-      y: crop.y / 100,
-      width: crop.width / 100,
-      height: crop.height / 100,
-    })
+    const next = await cropImageSource(
+      src,
+      {
+        x: crop.x / 100,
+        y: crop.y / 100,
+        width: crop.width / 100,
+        height: crop.height / 100,
+      },
+      services,
+    )
     setBusy(false)
     if (!next) {
       setError(
-        'This image could not be cropped. Images hosted on another site may block the canvas.',
+        'This image could not be cropped or uploaded. Images hosted on another site may also block the canvas.',
       )
       return
     }
     onApply(next)
     onClose()
-  }, [crop, onApply, onClose, src])
+  }, [crop, onApply, onClose, services, src])
 
   return createPortal(
     <div

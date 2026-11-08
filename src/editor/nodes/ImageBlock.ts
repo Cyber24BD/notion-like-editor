@@ -45,6 +45,33 @@ export const ImageBlock = Image.extend({
           'data-caption': String(attributes.caption ?? ''),
         }),
       },
+      // Transient optimistic-upload state. It is stripped from persisted JSON by
+      // stripUploadingImages() and never rendered into HTML.
+      uploadId: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
+      },
+      uploadState: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
+      },
+      uploadProgress: {
+        default: 0,
+        parseHTML: () => 0,
+        renderHTML: () => ({}),
+      },
+      uploadError: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
+      },
+      uploadPreview: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
+      },
     }
   },
 

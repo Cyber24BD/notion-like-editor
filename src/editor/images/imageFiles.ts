@@ -1,7 +1,3 @@
-import type { EditorView } from '@tiptap/pm/view'
-import { TextSelection } from '@tiptap/pm/state'
-import { Fragment, type Node as PMNode } from '@tiptap/pm/model'
-
 export interface PickedImage {
   src: string
   alt: string
@@ -9,21 +5,79 @@ export interface PickedImage {
   height: number
 }
 
-const MAX_DIMENSION = 1600
-const MAX_DATA_URL_LENGTH = 1_400_000
-const PASSTHROUGH_BYTES = 480_000
+export interface ImageUploadContext {
+  /** The untouched file the user selected. */
+  originalFile: File
+  /** Dimensions of the file passed to the uploader. */
+  width: number
+  height: number
+  alt: string
+  /** Aborted when the user cancels or leaves the page. */
+  signal?: AbortSignal
+  /** Optional 0–100 progress callback for hosts that can report it. */
+  onProgress?: (progress: number) => void
+}
 
-function readAsDataURL(file: File): Promise<string> {
+export interface UploadedImage {
+  src: string
+  width?: number
+  height?: number
+  alt?: string
+}
+
+export type ImageUploadResult = string | UploadedImage | null | undefined
+
+/**
+ * Receives the file the editor would otherwise store locally. Large raster
+ * images arrive as a WebP under 200 KB; small images, SVGs and GIFs arrive as
+ * the original file. `context.originalFile` is always the untouched upload.
+ */
+export type ImageUploader = (
+  file: File,
+  context: ImageUploadContext,
+) => ImageUploadResult | Promise<ImageUploadResult>
+
+export interface ImageServices {
+  uploader?: ImageUploader
+  onUploadError?: (error: unknown, file: File) => void
+}
+
+export interface PreparedImage {
+  file: File
+  alt: string
+  width: number
+  height: number
+}
+
+const MAX_IMAGE_BYTES = 200 * 1024
+const MAX_DIMENSION = 1600
+// Animated GIFs and SVGs are passed through; keep them from exhausting localStorage.
+const MAX_PASSTHROUGH_BYTES = 1_500_000
+
+const QUALITY_STEPS = [0.86, 0.72, 0.58, 0.46]
+const DIMENSION_STEPS = [MAX_DIMENSION, 1280, 1024, 860, 720, 600, 480, 380, 300]
+
+function readAsDataURL(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result ?? ''))
     reader.onerror = () => reject(reader.error ?? new Error('Could not read that file.'))
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(blob)
   })
 }
 
 function baseName(file: File): string {
   return file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || 'Image'
+}
+
+export function imageAltFromFile(file: File): string {
+  return baseName(file)
+}
+
+function outputFileName(blob: Blob, original: File): string {
+  const extension =
+    blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'webp'
+  return `${baseName(original)}.${extension}`
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -36,13 +90,19 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
-function encode(
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number,
+): Promise<Blob | null> {
+  return new Promise((resolve) => canvas.toBlob(resolve, type, quality))
+}
+
+function drawToCanvas(
   image: HTMLImageElement,
   width: number,
   height: number,
-  quality: number,
-  sourceType: string,
-): string {
+): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -51,19 +111,19 @@ function encode(
   context.imageSmoothingEnabled = true
   context.imageSmoothingQuality = 'high'
   context.drawImage(image, 0, 0, width, height)
-
-  const webp = canvas.toDataURL('image/webp', quality)
-  if (webp.startsWith('data:image/webp')) return webp
-  return sourceType === 'image/png'
-    ? canvas.toDataURL('image/png')
-    : canvas.toDataURL('image/jpeg', quality)
+  return canvas
 }
 
 /**
- * Reads a local image, downsizes/compresses it for localStorage and returns a
- * data URL ready for the editor. Animated GIFs and SVGs are passed through.
+ * Prepares an image for storage/upload. Images that are already 200 KB or
+ * smaller are kept untouched. Larger raster images are converted to WebP and
+ * progressively downscaled until the encoded image is under 200 KB. SVG is kept
+ * as-is because it is a vector format, and GIFs are kept as-is so animation is
+ * not silently flattened.
  */
-export async function processImageFile(file: File): Promise<PickedImage | null> {
+export async function prepareImageFile(
+  file: File,
+): Promise<PreparedImage | null> {
   if (!file.type.startsWith('image/')) return null
   const alt = baseName(file)
   const objectUrl = URL.createObjectURL(file)
@@ -72,54 +132,121 @@ export async function processImageFile(file: File): Promise<PickedImage | null> 
     const image = await loadImage(objectUrl)
     const naturalWidth = image.naturalWidth || 1
     const naturalHeight = image.naturalHeight || 1
-    const passThrough =
-      file.type === 'image/gif' ||
-      file.type === 'image/svg+xml' ||
-      (Math.max(naturalWidth, naturalHeight) <= MAX_DIMENSION &&
-        file.size <= PASSTHROUGH_BYTES)
+    const isVector = file.type === 'image/svg+xml'
+    const isGif = file.type === 'image/gif'
 
-    const raw = await readAsDataURL(file)
-
-    if (passThrough) {
-      if (raw.length > MAX_DATA_URL_LENGTH * 1.6) {
-        window.alert(
-          'That image is quite large. Try a smaller file so the page keeps saving locally.',
+    if (isVector || isGif || file.size <= MAX_IMAGE_BYTES) {
+      if ((isVector || isGif) && file.size > MAX_PASSTHROUGH_BYTES) {
+        throw new Error(
+          'That file is too large to keep locally. Try a smaller GIF, SVG or image.',
         )
-        return null
       }
-      return { src: raw, alt, width: naturalWidth, height: naturalHeight }
+      return { file, alt, width: naturalWidth, height: naturalHeight }
     }
 
-    const attempts = [
-      { dimension: MAX_DIMENSION, quality: 0.86 },
-      { dimension: 1280, quality: 0.8 },
-      { dimension: 1024, quality: 0.74 },
-      { dimension: 860, quality: 0.7 },
-    ]
+    const longEdge = Math.max(naturalWidth, naturalHeight)
+    const seen = new Set<string>()
 
-    let src = ''
-    for (const attempt of attempts) {
-      const scale = Math.min(1, attempt.dimension / Math.max(naturalWidth, naturalHeight))
+    for (const dimension of DIMENSION_STEPS) {
+      const scale = Math.min(1, dimension / longEdge)
       const width = Math.max(1, Math.round(naturalWidth * scale))
       const height = Math.max(1, Math.round(naturalHeight * scale))
-      src = encode(image, width, height, attempt.quality, file.type)
-      if (src.length <= MAX_DATA_URL_LENGTH) {
-        return { src, alt, width, height }
+      const key = `${width}x${height}`
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      for (const quality of QUALITY_STEPS) {
+        const canvas = drawToCanvas(image, width, height)
+        const webp = await canvasToBlob(canvas, 'image/webp', quality)
+        if (!webp) continue
+
+        // Browsers that cannot encode WebP fall back to their source format.
+        const blob =
+          webp.type === 'image/webp'
+            ? webp
+            : await canvasToBlob(
+                canvas,
+                file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+                quality,
+              )
+        if (!blob) continue
+        if (blob.size <= MAX_IMAGE_BYTES) {
+          const preparedFile = new File(
+            [blob],
+            outputFileName(blob, file),
+            { type: blob.type || 'image/webp' },
+          )
+          return { file: preparedFile, alt, width, height }
+        }
       }
     }
 
-    if (src.length > MAX_DATA_URL_LENGTH * 1.8) {
-      window.alert(
-        'That image is too large to keep locally. Try a smaller image or a screenshot.',
-      )
+    throw new Error(
+      'That image could not be compressed under 200 KB. Try a smaller image or a screenshot.',
+    )
+  } finally {
+    URL.revokeObjectURL(objectUrl)
+  }
+}
+
+export async function processImageFile(
+  file: File,
+  services?: ImageServices | null,
+): Promise<PickedImage | null> {
+  let prepared: PreparedImage | null
+  try {
+    prepared = await prepareImageFile(file)
+  } catch (error) {
+    window.alert(
+      error instanceof Error
+        ? error.message
+        : 'That file could not be used as an image.',
+    )
+    return null
+  }
+
+  if (!prepared) return null
+
+  if (services?.uploader) {
+    try {
+      const uploaded = await services.uploader(prepared.file, {
+        originalFile: file,
+        width: prepared.width,
+        height: prepared.height,
+        alt: prepared.alt,
+      })
+      if (uploaded == null) return null
+      const result = typeof uploaded === 'string' ? { src: uploaded } : uploaded
+      if (!result.src) {
+        throw new Error('The image upload did not return a URL.')
+      }
+      return {
+        src: result.src,
+        alt: result.alt ?? prepared.alt,
+        width: result.width ?? prepared.width,
+        height: result.height ?? prepared.height,
+      }
+    } catch (error) {
+      if (services.onUploadError) {
+        services.onUploadError(error, file)
+      } else {
+        window.alert('Image upload failed. Please try again.')
+      }
       return null
     }
-    return { src, alt, width: naturalWidth, height: naturalHeight }
+  }
+
+  try {
+    const src = await readAsDataURL(prepared.file)
+    return {
+      src,
+      alt: prepared.alt,
+      width: prepared.width,
+      height: prepared.height,
+    }
   } catch {
     window.alert('That file could not be used as an image.')
     return null
-  } finally {
-    URL.revokeObjectURL(objectUrl)
   }
 }
 
@@ -130,10 +257,11 @@ export interface CropFraction {
   height: number
 }
 
-/** Crops a (data-URL) image and re-runs the compression pipeline. */
+/** Crops a (data-URL) image and re-runs the compression/upload pipeline. */
 export async function cropImageSource(
   src: string,
   crop: CropFraction,
+  services?: ImageServices | null,
 ): Promise<string | null> {
   try {
     const image = await loadImage(src)
@@ -158,18 +286,28 @@ export async function cropImageSource(
     if (!blob) return null
 
     const file = new File([blob], 'cropped.png', { type: 'image/png' })
-    const processed = await processImageFile(file)
+    const processed = await processImageFile(file, services)
     return processed?.src ?? null
   } catch {
     return null
   }
 }
 
-/**
- * Opens the operating system's file picker. Must be called from a user gesture
- * (click / Enter) so the browser allows the dialog.
- */
-export function pickImageFile(): Promise<PickedImage | null> {
+/** Opens the OS picker and resolves with the raw file. Must be user-gesture driven. */
+export function pickImageFileRaw(): Promise<File | null> {
+  return openImagePicker()
+}
+
+/** Opens the picker and processes/upload the chosen file. */
+export async function pickImageFile(
+  services?: ImageServices | null,
+): Promise<PickedImage | null> {
+  const file = await openImagePicker()
+  if (!file) return null
+  return processImageFile(file, services)
+}
+
+function openImagePicker(): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -187,7 +325,7 @@ export function pickImageFile(): Promise<PickedImage | null> {
       }, 450)
     }
 
-    const finish = (value: PickedImage | null) => {
+    const finish = (value: File | null) => {
       if (settled) return
       settled = true
       window.removeEventListener('focus', handleFocus)
@@ -196,12 +334,7 @@ export function pickImageFile(): Promise<PickedImage | null> {
     }
 
     input.addEventListener('change', () => {
-      const file = input.files?.[0]
-      if (!file) {
-        finish(null)
-        return
-      }
-      void processImageFile(file).then(finish).catch(() => finish(null))
+      finish(input.files?.[0] ?? null)
     })
 
     input.addEventListener('cancel', () => finish(null))
@@ -221,51 +354,4 @@ export function imageFilesFromTransfer(transfer: DataTransfer | null): File[] {
     .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
     .map((item) => item.getAsFile())
     .filter((file): file is File => file !== null)
-}
-
-function imageNodes(view: EditorView, images: PickedImage[]): PMNode[] {
-  const imageType = view.state.schema.nodes.image
-  if (!imageType) return []
-  return images.map((image) =>
-    imageType.create({ src: image.src, alt: image.alt, title: image.alt }),
-  )
-}
-
-/**
- * Inserts processed images at/after the given document position, keeping the
- * block structure valid (replacing an empty paragraph, otherwise inserting
- * after the current block).
- */
-export async function insertImageFiles(view: EditorView, files: File[], pos: number) {
-  const processed = await Promise.all(
-    files.map((file) => processImageFile(file).catch(() => null)),
-  )
-  const images = processed.filter((image): image is PickedImage => image !== null)
-  if (images.length === 0 || view.isDestroyed) return
-
-  const nodes = imageNodes(view, images)
-  if (nodes.length === 0) return
-
-  const { state } = view
-  const safePos = Math.max(0, Math.min(pos, state.doc.content.size))
-  const $pos = state.doc.resolve(safePos)
-  const depth = Math.min($pos.depth, 1)
-  const isInsideEmptyBlock =
-    depth > 0 && $pos.parent.isTextblock && $pos.parent.content.size === 0
-
-  const tr = isInsideEmptyBlock
-    ? state.tr.replaceWith(
-        $pos.before(depth),
-        $pos.before(depth) + $pos.parent.nodeSize,
-        Fragment.fromArray(nodes),
-      )
-    : state.tr.insert(depth > 0 ? $pos.after(depth) : 0, Fragment.fromArray(nodes))
-
-  const insertedSize = nodes.reduce((total, node) => total + node.nodeSize, 0)
-  const selectionPos = Math.min(
-    (isInsideEmptyBlock ? $pos.before(depth) : $pos.after(depth)) + insertedSize,
-    tr.doc.content.size,
-  )
-  tr.setSelection(TextSelection.near(tr.doc.resolve(selectionPos)))
-  view.dispatch(tr.scrollIntoView())
 }

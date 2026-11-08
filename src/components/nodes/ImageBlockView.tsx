@@ -10,7 +10,13 @@ import {
 import { createPortal } from 'react-dom'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import type { Node as PMNode } from '@tiptap/pm/model'
-import { pickImageFile } from '../../editor/images/imageFiles'
+import { pickImageFile, pickImageFileRaw } from '../../editor/images/imageFiles'
+import { getImageServices } from '../../editor/images/imageServices'
+import {
+  cancelImageUpload,
+  retryImageUpload,
+  startImageReplacement,
+} from '../../editor/images/uploadManager'
 import { Menu, type MenuNode } from '../Menu'
 import {
   AlignCenter,
@@ -73,6 +79,16 @@ export function ImageBlockView({
   const caption = String(node.attrs.caption ?? '')
   const src = String(node.attrs.src ?? '')
   const alt = String(node.attrs.alt ?? '')
+  const uploadId = typeof node.attrs.uploadId === 'string' ? node.attrs.uploadId : ''
+  const uploadState = String(node.attrs.uploadState ?? '')
+  const uploadProgress = Math.max(
+    0,
+    Math.min(100, Number(node.attrs.uploadProgress) || 0),
+  )
+  const uploadError = String(node.attrs.uploadError ?? '')
+  const uploadPreview = String(node.attrs.uploadPreview ?? '')
+  const displaySrc = uploadPreview || src
+  const hasUpload = uploadState !== ''
 
   const frameRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{
@@ -182,7 +198,17 @@ export function ImageBlockView({
   }
 
   const replace = () => {
-    void pickImageFile().then((image) => {
+    const services = getImageServices(editor)
+    if (services?.uploader) {
+      void pickImageFileRaw().then((file) => {
+        if (!file || editor.isDestroyed) return
+        const pos = getPos()
+        if (typeof pos !== 'number') return
+        startImageReplacement(editor.view, pos, file, services)
+      })
+      return
+    }
+    void pickImageFile(services).then((image) => {
       if (!image || editor.isDestroyed) return
       updateAttributes({ src: image.src, alt: image.alt })
     })
@@ -194,6 +220,7 @@ export function ImageBlockView({
   }
 
   const openLightbox = () => {
+    if (hasUpload) return
     const images = collectImages(editor.state.doc)
     if (images.length === 0) return
     const pos = getPos()
@@ -210,7 +237,7 @@ export function ImageBlockView({
   }))
 
   const toolbar =
-    selected && !cropOpen && toolbarAt
+    selected && !cropOpen && !hasUpload && toolbarAt
       ? createPortal(
           <div
             className="image-toolbar popover"
@@ -340,6 +367,7 @@ export function ImageBlockView({
       data-selected={selected ? 'true' : 'false'}
       data-has-caption={caption ? 'true' : 'false'}
       data-resizing={resizing ? 'true' : 'false'}
+      data-upload-state={uploadState || undefined}
       contentEditable={false}
     >
       <div
@@ -348,17 +376,83 @@ export function ImageBlockView({
         style={{ width: `${width}%` }}
       >
         <img
-          src={src}
+          src={displaySrc}
           alt={alt || caption}
           draggable={false}
           onLoad={updateToolbarPosition}
           onClick={(event) => {
             event.stopPropagation()
-            openLightbox()
+            if (!hasUpload) openLightbox()
           }}
         />
+        {hasUpload && (
+          <div
+            className="image-upload-overlay"
+            role="status"
+            aria-live="polite"
+            aria-label="Image upload status"
+            contentEditable={false}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {uploadState === 'error' ? (
+              <>
+                <div className="image-upload-overlay__title">Upload failed</div>
+                <div className="image-upload-overlay__message">
+                  {uploadError || 'Please try again.'}
+                </div>
+                <div className="image-upload-overlay__actions">
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    disabled={!uploadId}
+                    onClick={() => retryImageUpload(editor.view, uploadId)}
+                  >
+                    Retry
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={!uploadId}
+                    onClick={() => cancelImageUpload(editor.view, uploadId)}
+                  >
+                    {src ? 'Keep old image' : 'Remove'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="image-upload-overlay__title">
+                  {uploadState === 'preparing'
+                    ? 'Preparing image…'
+                    : uploadProgress > 0
+                      ? `Uploading ${uploadProgress}%`
+                      : 'Uploading…'}
+                </div>
+                <div
+                  className="image-upload-overlay__track"
+                  data-indeterminate={uploadProgress <= 0 ? 'true' : 'false'}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={uploadProgress > 0 ? uploadProgress : undefined}
+                >
+                  <span style={{ width: `${uploadProgress}%` }} />
+                </div>
+                <button
+                  type="button"
+                  className="btn image-upload-overlay__cancel"
+                  disabled={!uploadId}
+                  onClick={() => cancelImageUpload(editor.view, uploadId)}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        )}
         {selected &&
           !cropOpen &&
+          !hasUpload &&
           (['nw', 'ne', 'sw', 'se'] as Corner[]).map((corner) => (
             <span
               key={corner}
@@ -398,6 +492,7 @@ export function ImageBlockView({
       {cropOpen && (
         <LazyCropDialog
           src={src}
+          services={getImageServices(editor)}
           onClose={() => setCropOpen(false)}
           onApply={(nextSrc) => updateAttributes({ src: nextSrc })}
         />

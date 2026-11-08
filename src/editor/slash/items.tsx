@@ -24,7 +24,9 @@ import {
   ToggleIcon,
   Type,
 } from '../../components/Icons'
-import { pickImageFile } from '../images/imageFiles'
+import { pickImageFile, pickImageFileRaw } from '../images/imageFiles'
+import { getImageServices } from '../images/imageServices'
+import { insertImageFiles } from '../images/uploadManager'
 import { openVideoDialog } from '../video/dialogStore'
 import { openAudioDialog } from '../audio/dialogStore'
 import { openIframeDialog } from '../iframe/dialogStore'
@@ -188,7 +190,20 @@ export const slashItems: SlashItem[] = [
       if (range) commands.deleteRange(range)
       commands.run()
 
-      void pickImageFile().then((image) => {
+      const services = getImageServices(editor)
+      if (services?.uploader) {
+        void pickImageFileRaw().then((file) => {
+          if (!file || editor.isDestroyed) return
+          void insertImageFiles(
+            editor.view,
+            [file],
+            editor.state.selection.from,
+            services,
+          )
+        })
+        return
+      }
+      void pickImageFile(services).then((image) => {
         if (!image || editor.isDestroyed) return
         editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
       })

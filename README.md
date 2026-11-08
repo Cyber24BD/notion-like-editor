@@ -27,23 +27,40 @@ npm install ../notion-like-editor-1.0.0.tgz
 ```
 
 ```tsx
-import { useState } from 'react'
-import { NotionEditor, type JSONContent } from 'notion-like-editor'
+import { useRef, useState } from 'react'
+import {
+  NotionEditor,
+  type JSONContent,
+  type NotionEditorHandle,
+} from 'notion-like-editor'
 import 'notion-like-editor/style.css'
 
 export function MyPage() {
   const [title, setTitle] = useState('My document')
   const [content, setContent] = useState<JSONContent | null>(null)
+  const editor = useRef<NotionEditorHandle>(null)
 
   return (
     <div style={{ height: '80vh' }}>
       <NotionEditor
+        ref={editor}
         documentId="doc-1"
         title={title}
         icon="📝"
-        content={content}
+        value={content}
         onTitleChange={setTitle}
         onContentChange={setContent}
+        uploadImage={async (file) => {
+          const form = new FormData()
+          form.append('file', file)
+          const response = await fetch('/api/images', {
+            method: 'POST',
+            body: form,
+          })
+          const { url } = await response.json()
+          return url
+        }}
+        onImageUploadError={(error) => console.error(error)}
       />
     </div>
   )
@@ -52,8 +69,12 @@ export function MyPage() {
 
 - **React 18 or 19.** React is a peer dependency; the editor stack ships with the package.
 - **Size the parent.** The editor fills its container and scrolls internally, so give the wrapper a height.
-- **Persistence is yours.** Save `content` JSON however you like. Images are embedded as data URLs, while videos/charts only store metadata and settings.
-- **`documentId` remounts.** Change it when you switch documents. Editing the same document externally requires a new id/key.
+- **Controlled content:** `value` + `onContentChange` keeps the document in sync. External value changes (server loads, undo from your app, etc.) are applied **without remounting**. `content` is still available as initial-only content. Keep `value` stable while typing; don't feed back a debounced stale snapshot.
+- **`documentId` identifies a document.** Changing it remounts the editor. Use `value` rather than a remount when the same document reloads.
+- **Imperative API:** `ref` exposes `getJSON()`, `setContent(content, { emitUpdate })`, `focus('start' | 'end' | 'all' | number)`, `getEditor()` and `isEmpty()`. `setContent` emits `onContentChange` by default; pass `{ emitUpdate: false }` for a silent restore. `onReady(editor)` fires when the editor is ready.
+- **Image uploads:** with `uploadImage`, images are uploaded and only the returned URL is stored. Uploads are optimistic: a preview appears immediately, with progress, cancel, retry and inline errors. The editor passes an optimized file: large raster images arrive as **WebP under 200 KB**; images already under 200 KB, SVGs and GIFs arrive as the original file. `context.originalFile` always contains the untouched upload. Use `context.signal` for cancellation and `context.onProgress(0–100)` to report progress. Return a URL or `{ src, width, height, alt }`; return `null` to cancel. Handle failures with `onImageUploadError`.
+- **Uploading images are never persisted.** Preview blob URLs and progress attrs live only in the live editor. `getJSON()` and `onContentChange` return the saved shape, so it is safe to save while an upload is in flight. Replacing an image keeps the old URL persisted until the new upload succeeds.
+- **Without an uploader:** images are compressed locally (same 200 KB WebP rule) and embedded as data URLs. Videos and charts store metadata/settings rather than media bytes.
 - **Optional callbacks:** `onIconChange`, `onNavigatePage` / `onCreateSubPage` for page links.
 - **Presentation props:** `editable`, `showHeader`, `showBubbleToolbar`, `showTableToolbar`, `className`.
 - **Theming:** the stylesheet includes Notion design tokens, base typography and scrollbars. Set `data-theme="dark"` on `<html>` for dark mode, or override the CSS variables.
@@ -131,7 +152,7 @@ src/
 
 - The editor uses the CDN build of **Inter** (`rsms.me`) with a full system-font fallback, so it stays close to Notion on every platform and still renders offline.
 - Clearing site data (or “Reset demo” in the sidebar) restores the seeded workspace.
-- Images are read locally with the OS file picker, downscaled and compressed (WebP when the browser supports it) before being embedded as data URLs, so they survive refreshes without a server. If the browser storage fills up, the sidebar shows a “Storage full” warning.
+- Images are read locally with the OS file picker. Images already **200 KB or smaller are kept exactly as uploaded** (original format and bytes). Larger raster images are converted to WebP and progressively downscaled until the encoded image is under 200 KB. SVG stays vector and GIFs keep their animation, so both are left untouched. In the demo the result is embedded as a data URL; when the library is given an `uploadImage` adapter, only the returned URL is stored. If browser storage fills up, the sidebar shows a “Storage full” warning.
 - Clicking an image opens a fullscreen lightbox. It supports wheel/pinch zoom, drag-to-pan, double-click zoom, fit/actual-size controls, keyboard shortcuts (`+`/`-`/`0`/arrows/`F`/`Esc`), previous/next navigation across all images on the page, copy image, download, open original, browser fullscreen, image dimensions and captions. The image toolbar also has a Preview button.
 - Selecting an image reveals a floating toolbar (S/M/L/Full presets, alignment, crop, frame styles, replace, delete) plus corner handles for free resizing. Captions are editable directly under the image.
 - Placing the caret in a table shows a table toolbar with Row and Column menus, merge/split, header toggles, select row/column/table and delete table. Drag a column border to resize it.
