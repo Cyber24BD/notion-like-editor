@@ -5,6 +5,7 @@ import type { ChartSettingsDialog } from '../ChartSettingsDialog'
 import type { ColorPalette } from '../ColorPalette'
 import type { CommandPalette } from '../CommandPalette'
 import type { CropDialog } from '../nodes/CropDialog'
+import type { CustomHtmlDialog } from '../CustomHtmlDialog'
 import type { EmojiPicker } from '../EmojiPicker'
 import type { IframeDialog } from '../IframeDialog'
 import type { MathDialog } from '../MathDialog'
@@ -18,6 +19,7 @@ type ChartSettingsProps = ComponentProps<typeof ChartSettingsDialog>
 type ColorPaletteProps = ComponentProps<typeof ColorPalette>
 type CommandPaletteProps = ComponentProps<typeof CommandPalette>
 type CropDialogProps = ComponentProps<typeof CropDialog>
+type CustomHtmlDialogProps = ComponentProps<typeof CustomHtmlDialog>
 type EmojiPickerProps = ComponentProps<typeof EmojiPicker>
 type IframeDialogProps = ComponentProps<typeof IframeDialog>
 type MathDialogProps = ComponentProps<typeof MathDialog>
@@ -45,6 +47,11 @@ const CommandPaletteLazy = lazy(() =>
 )
 const CropDialogLazy = lazy(() =>
   import('../nodes/CropDialog').then((module) => ({ default: module.CropDialog })),
+)
+const CustomHtmlDialogLazy = lazy(() =>
+  import('../CustomHtmlDialog').then((module) => ({
+    default: module.CustomHtmlDialog,
+  })),
 )
 const EmojiPickerLazy = lazy(() =>
   import('../EmojiPicker').then((module) => ({ default: module.EmojiPicker })),
@@ -100,6 +107,14 @@ export function LazyCommandPalette(props: CommandPaletteProps) {
   return (
     <Suspense fallback={null}>
       <CommandPaletteLazy {...props} />
+    </Suspense>
+  )
+}
+
+export function LazyCustomHtmlDialog(props: CustomHtmlDialogProps) {
+  return (
+    <Suspense fallback={null}>
+      <CustomHtmlDialogLazy {...props} />
     </Suspense>
   )
 }
@@ -170,4 +185,5 @@ export function preloadFeatureDialogs(features: ResolvedEditorFeatures) {
   if (features.bookmark) void import('../BookmarkDialog')
   if (features.math) void import('../MathDialog')
   if (features.mermaid) void import('../MermaidDialog')
+  if (features.customHtml) void import('../CustomHtmlDialog')
 }

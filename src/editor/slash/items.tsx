@@ -33,6 +33,12 @@ import { openIframeDialog } from '../iframe/dialogStore'
 import { openBookmarkDialog } from '../bookmark/dialogStore'
 import { openMathDialog } from '../math/dialogStore'
 import { openMermaidDialog } from '../mermaid/dialogStore'
+import { openCustomHtmlDialog } from '../customHtml/dialogStore'
+import {
+  DEFAULT_CUSTOM_CSS,
+  DEFAULT_CUSTOM_HTML,
+  DEFAULT_CUSTOM_JAVASCRIPT,
+} from '../customHtml/document'
 import { MERMAID_TEMPLATES } from '../mermaid/templates'
 import type { SlashItem } from './types'
 
@@ -401,6 +407,40 @@ export const slashItems: SlashItem[] = [
         initialHeight: 0,
         onApply: (code, theme, height) => {
           editor.chain().focus().setMermaid({ code, theme, height }).run()
+        },
+      })
+    },
+  },
+  {
+    id: 'custom-html',
+    feature: 'customHtml',
+    title: 'Custom HTML',
+    subtitle: 'HTML, CSS and JS in an isolated frame.',
+    group: 'Advanced',
+    icon: <CodeIcon size={ICON_SIZE} />,
+    keywords: [
+      'custom',
+      'html',
+      'css',
+      'js',
+      'javascript',
+      'code',
+      'design',
+      'sandbox',
+      'embed',
+      'widget',
+    ],
+    run: ({ editor, range }) => {
+      const commands = editor.chain().focus()
+      if (range) commands.deleteRange(range)
+      commands.run()
+      openCustomHtmlDialog({
+        editing: false,
+        initialHtml: DEFAULT_CUSTOM_HTML,
+        initialCss: DEFAULT_CUSTOM_CSS,
+        initialJavascript: DEFAULT_CUSTOM_JAVASCRIPT,
+        onApply: (html, css, javascript) => {
+          editor.chain().focus().setCustomHtml({ html, css, javascript }).run()
         },
       })
     },

@@ -59,6 +59,7 @@ import { BookmarkDialogHost } from './BookmarkDialogHost'
 import { AudioDialogHost } from './AudioDialogHost'
 import { MathDialogHost } from './MathDialogHost'
 import { MermaidDialogHost } from './MermaidDialogHost'
+import { CustomHtmlDialogHost } from './CustomHtmlDialogHost'
 import { LazyEmojiPicker, preloadFeatureDialogs } from './lazy/LazyWidgets'
 import { TableToolbar } from './TableToolbar'
 import { ImageIcon } from './Icons'
@@ -758,6 +759,7 @@ function PageEditor({
       <BookmarkDialogHost />
       <MathDialogHost />
       <MermaidDialogHost />
+      <CustomHtmlDialogHost />
       </div>
     </div>
   )

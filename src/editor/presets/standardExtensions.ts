@@ -4,6 +4,7 @@ import { VideoEmbed } from '../nodes/VideoEmbed'
 import { Bookmark } from '../nodes/Bookmark'
 import { TableOfContents } from '../nodes/TableOfContents'
 import { Chart } from '../nodes/Chart'
+import { CustomHtml } from '../nodes/CustomHtml'
 import { SlashCommand } from '../slash/SlashCommand'
 import { slashItems } from '../slash/items'
 import { STANDARD_FEATURES } from '../features'
@@ -23,6 +24,7 @@ export function createExtensions(
     Bookmark,
     TableOfContents,
     Chart,
+    CustomHtml,
     SlashCommand.configure({ items: standardItems }),
   ]
 }

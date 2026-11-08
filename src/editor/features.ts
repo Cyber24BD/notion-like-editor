@@ -8,6 +8,7 @@ export const EDITOR_FEATURES = [
   'math',
   'mermaid',
   'chart',
+  'customHtml',
 ] as const
 
 export type EditorFeature = (typeof EDITOR_FEATURES)[number]
@@ -24,6 +25,7 @@ export const FULL_FEATURES: ResolvedEditorFeatures = {
   math: true,
   mermaid: true,
   chart: true,
+  customHtml: true,
 }
 
 export const STANDARD_FEATURES: ResolvedEditorFeatures = {
@@ -45,6 +47,7 @@ export const CORE_FEATURES: ResolvedEditorFeatures = {
   math: false,
   mermaid: false,
   chart: false,
+  customHtml: false,
 }
 
 export function resolveEditorFeatures(

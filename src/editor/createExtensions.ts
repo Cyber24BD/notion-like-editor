@@ -21,6 +21,7 @@ import { InlineMath } from './nodes/InlineMath'
 import { BlockMath } from './nodes/BlockMath'
 import { Mermaid } from './nodes/Mermaid'
 import { Chart } from './nodes/Chart'
+import { CustomHtml } from './nodes/CustomHtml'
 import { BlockRange } from './nodes/BlockRange'
 import { NotionSearch } from './search/NotionSearch'
 import { SlashCommand } from './slash/SlashCommand'
@@ -101,6 +102,7 @@ export function createExtensions(
     ...(features.math ? [InlineMath, BlockMath] : []),
     ...(features.mermaid ? [Mermaid] : []),
     ...(features.chart ? [Chart] : []),
+    ...(features.customHtml ? [CustomHtml] : []),
     SlashCommand.configure({ items }),
     ...(options.extensions ?? []),
   ]
