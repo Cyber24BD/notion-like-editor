@@ -801,6 +801,9 @@ function PageEditor({
       {editor && findMode && (
         <FindReplaceBar
           editor={editor}
+          title={title}
+          titleRef={titleRef}
+          onTitleChange={onTitleChange}
           mode={findMode}
           onModeChange={setFindMode}
           onClose={() => setFindMode(null)}

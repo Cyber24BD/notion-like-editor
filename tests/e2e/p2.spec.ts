@@ -103,6 +103,56 @@ test('find and replace updates the document', async ({ page }) => {
   await expect(page.locator('.find-bar')).toHaveCount(0)
 })
 
+test('find supports case, whole-word and regex options', async ({ page }) => {
+  await page.locator('.notion-editor p').first().click()
+  await page.keyboard.press('Control+f')
+  const input = page.getByRole('textbox', { name: 'Find in page' })
+
+  await input.fill('controlled')
+  await expect(page.locator('.find-bar__count')).toHaveText('1 of 1')
+  await page.getByRole('button', { name: 'Match case' }).click()
+  await expect(page.locator('.find-bar__count')).toHaveText('No results')
+  await page.getByRole('button', { name: 'Match case' }).click()
+
+  await input.fill('editor')
+  await expect(page.locator('.find-bar__count')).toHaveText('1 of 1')
+  await page.getByRole('button', { name: 'Whole word' }).click()
+  await input.fill('edit')
+  await expect(page.locator('.find-bar__count')).toHaveText('No results')
+  await input.fill('editor')
+  await expect(page.locator('.find-bar__count')).toHaveText('1 of 1')
+
+  await page.getByRole('button', { name: 'Whole word' }).click()
+  await input.fill('Controlled|body')
+  await expect(page.locator('.find-bar__count')).toHaveText('No results')
+  await page.getByRole('button', { name: 'Use regular expression' }).click()
+  await expect(page.locator('.find-bar__count')).toHaveText('1 of 2')
+  await expect(page.locator('.find-bar__unsafe')).toBeVisible()
+  await expect(page.locator('.search-match')).toHaveCount(2)
+
+  await input.fill('[')
+  await expect(page.locator('.find-bar__error')).toBeVisible()
+  await expect(page.locator('.find-bar__count')).toHaveText('Invalid pattern')
+})
+
+test('find can search and replace the page title', async ({ page }) => {
+  await page.locator('.notion-editor p').first().click()
+  await page.keyboard.press('Control+f')
+  const input = page.getByRole('textbox', { name: 'Find in page' })
+  await input.fill('Harness')
+  const titleMatch = page.locator('.find-bar__title-match')
+  await expect(titleMatch).toBeVisible()
+  await expect(titleMatch).toContainText('Harness')
+  await expect(page.locator('.find-bar__count')).toHaveText('1 of 2')
+
+  await titleMatch.click()
+  await page.keyboard.press('Control+h')
+  await page.getByRole('textbox', { name: 'Replace with' }).fill('Demo')
+  await page.getByRole('button', { name: 'Replace', exact: true }).click()
+  await expect(page.locator('.notion-page-title')).toHaveValue('Demo document')
+  await expect(titleMatch).toHaveCount(0)
+})
+
 test('keyboard shortcuts dialog is discoverable and closes with Escape', async ({
   page,
 }) => {
@@ -125,6 +175,27 @@ test('find opens when focus is on the app top bar', async ({ page }) => {
   await expect(page.locator('.find-bar')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(page.locator('.find-bar')).toHaveCount(0)
+})
+
+test('modal dialogs trap keyboard focus', async ({ page }) => {
+  await page.locator('.notion-editor p').last().click()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('/video')
+  await expect(page.locator('.slash-menu')).toBeVisible()
+  await page.keyboard.press('Enter')
+  const dialog = page.locator('.video-dialog')
+  await expect(dialog).toBeVisible()
+
+  for (let index = 0; index < 10; index += 1) {
+    await page.keyboard.press('Tab')
+  }
+  expect(
+    await page.evaluate(() => Boolean(document.activeElement?.closest('.video-dialog'))),
+  ).toBe(true)
+
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
 })
 
 test('mobile table toolbar stays inside the viewport', async ({ page }) => {

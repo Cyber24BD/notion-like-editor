@@ -16,6 +16,7 @@
 - Added keyboard/touch page-menu actions for Move up/down, Indent, Move out and Move to page.
 - Added focus traps to modal dialogs and keyboard-accessible page-cover positioning.
 - Added in-page find/replace with match highlighting and replace-all.
+- Added case-sensitive, whole-word, page-title and regex search modes to find/replace.
 - Added a complete keyboard shortcuts dialog and shortcut documentation.
 - Polished image/table toolbars on narrow screens with a fixed bottom action bar.
 - Added a sandboxed Custom HTML block with HTML/CSS/JS tabs, live preview, auto-height, full-screen preview and standalone download.

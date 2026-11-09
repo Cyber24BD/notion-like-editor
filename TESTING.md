@@ -43,6 +43,8 @@ Playwright starts Vite on port `5199` and uses:
   `tests/e2e/custom-html.spec.ts`
 - Keyboard/touch page-menu moves, indent/outdent, Move to page and cover keyboard
   positioning are covered in `tests/e2e/sidebar-actions.spec.ts` and `p2.spec.ts`.
+- Find/replace case, whole-word, page-title and regex modes are covered in
+  `tests/e2e/p2.spec.ts`.
 
 Useful commands:
 
