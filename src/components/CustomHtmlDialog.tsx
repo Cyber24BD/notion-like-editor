@@ -6,9 +6,14 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import { CustomHtmlFrame } from './custom-html/CustomHtmlFrame'
 import { Check, Code, Copy, X } from './Icons'
-import type { CustomHtmlSource } from '../editor/customHtml/document'
+import {
+  DEFAULT_CUSTOM_HTML_OPTIONS,
+  type CustomHtmlSandboxOptions,
+  type CustomHtmlSource,
+} from '../editor/customHtml/document'
 
 type CodeTab = 'html' | 'css' | 'javascript'
 
@@ -17,7 +22,13 @@ interface CustomHtmlDialogProps {
   initialHtml: string
   initialCss: string
   initialJavascript: string
-  onApply: (html: string, css: string, javascript: string) => void
+  initialOptions?: CustomHtmlSandboxOptions
+  onApply: (
+    html: string,
+    css: string,
+    javascript: string,
+    options: CustomHtmlSandboxOptions,
+  ) => void
   onClose: () => void
 }
 
@@ -32,6 +43,7 @@ export function CustomHtmlDialog({
   initialHtml,
   initialCss,
   initialJavascript,
+  initialOptions = DEFAULT_CUSTOM_HTML_OPTIONS,
   onApply,
   onClose,
 }: CustomHtmlDialogProps) {
@@ -44,9 +56,13 @@ export function CustomHtmlDialog({
     css: initialCss,
     javascript: initialJavascript,
   })
+  const [options, setOptions] = useState<CustomHtmlSandboxOptions>(initialOptions)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const dialogRef = useRef<HTMLElement>(null)
   const firstInputRef = useRef<HTMLTextAreaElement>(null)
+
+  useFocusTrap(dialogRef)
 
   const canApply = Boolean(html.trim() || css.trim() || javascript.trim())
 
@@ -89,9 +105,9 @@ export function CustomHtmlDialog({
 
   const apply = useCallback(() => {
     if (!canApply) return
-    onApply(html, css, javascript)
+    onApply(html, css, javascript, options)
     onClose()
-  }, [canApply, css, html, javascript, onApply, onClose])
+  }, [canApply, css, html, javascript, onApply, onClose, options])
 
   const copy = () => {
     if (!navigator.clipboard) return
@@ -127,6 +143,7 @@ export function CustomHtmlDialog({
       }}
     >
       <section
+        ref={dialogRef}
         className="custom-html-dialog"
         role="dialog"
         aria-modal="true"
@@ -214,17 +231,90 @@ export function CustomHtmlDialog({
                 html={preview.html}
                 css={preview.css}
                 javascript={preview.javascript}
+                options={options}
                 minHeight={220}
                 maxHeight={440}
                 onError={setError}
               />
             </div>
             <p className="custom-html-preview-panel__note">
-              Scripts run without access to this page. Do not paste code you do
-              not trust.
+              {options.allowScripts
+                ? 'Scripts run in a sandbox and cannot read this page.'
+                : 'Scripts are disabled for this block.'}{' '}
+              {options.allowNetwork
+                ? 'Network access is enabled, so only use trusted code.'
+                : 'Network access is blocked by the frame policy.'}
             </p>
+            <details className="custom-html-advanced">
+              <summary>Advanced sandbox options</summary>
+              <div className="custom-html-advanced__grid">
+                <label className="custom-html-option">
+                  <input
+                    type="checkbox"
+                    checked={options.allowScripts}
+                    onChange={(event) =>
+                      setOptions({
+                        ...options,
+                        allowScripts: event.target.checked,
+                      })
+                    }
+                  />
+                  <span>Run JavaScript</span>
+                </label>
+                <label className="custom-html-option">
+                  <input
+                    type="checkbox"
+                    checked={options.allowForms}
+                    onChange={(event) =>
+                      setOptions({
+                        ...options,
+                        allowForms: event.target.checked,
+                      })
+                    }
+                  />
+                  <span>Allow forms</span>
+                </label>
+                <label className="custom-html-option">
+                  <input
+                    type="checkbox"
+                    checked={options.allowNetwork}
+                    onChange={(event) =>
+                      setOptions({
+                        ...options,
+                        allowNetwork: event.target.checked,
+                      })
+                    }
+                  />
+                  <span>Allow network</span>
+                </label>
+                <label className="custom-html-option">
+                  <input
+                    type="checkbox"
+                    checked={options.allowPopups}
+                    onChange={(event) =>
+                      setOptions({
+                        ...options,
+                        allowPopups: event.target.checked,
+                      })
+                    }
+                  />
+                  <span>Allow popups</span>
+                </label>
+              </div>
+              <p className="custom-html-advanced__note">
+                Disable scripts for untrusted snippets. Synchronous infinite
+                loops can still freeze the browser; reload the block or turn
+                scripts off to recover.
+              </p>
+            </details>
           </div>
         </div>
+
+        {copied && (
+          <div className="custom-html-toast" role="status" aria-live="polite">
+            Copied HTML, CSS and JavaScript
+          </div>
+        )}
 
         <footer className="custom-html-dialog__foot">
           <span className="custom-html-dialog__foot-hint">

@@ -1,11 +1,18 @@
 import { useSyncExternalStore } from 'react'
+import type { CustomHtmlSandboxOptions } from './document'
 
 export interface CustomHtmlDialogOptions {
   editing?: boolean
   initialHtml: string
   initialCss: string
   initialJavascript: string
-  onApply: (html: string, css: string, javascript: string) => void
+  initialOptions: CustomHtmlSandboxOptions
+  onApply: (
+    html: string,
+    css: string,
+    javascript: string,
+    options: CustomHtmlSandboxOptions,
+  ) => void
 }
 
 interface CustomHtmlDialogState {

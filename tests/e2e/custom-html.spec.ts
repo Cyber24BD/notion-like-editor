@@ -21,10 +21,23 @@ async function openCustomHtml(page: import('@playwright/test').Page) {
   ).toBeVisible()
 }
 
-test('custom HTML runs isolated HTML, CSS and JavaScript', async ({ page }) => {
+test('custom HTML runs isolated HTML, CSS and JavaScript', async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await openCustomHtml(page)
   const preview = page.frameLocator('.custom-html-dialog iframe')
   await expect(preview.locator('.custom-card')).toBeVisible()
+
+  for (let index = 0; index < 8; index += 1) {
+    await page.keyboard.press('Tab')
+  }
+  expect(
+    await page.evaluate(() =>
+      Boolean(document.activeElement?.closest('.custom-html-dialog')),
+    ),
+  ).toBe(true)
   await expect(preview.locator('#custom-action')).toContainText('Clicked 0 times')
 
   await preview.locator('#custom-action').click()
@@ -39,6 +52,13 @@ test('custom HTML runs isolated HTML, CSS and JavaScript', async ({ page }) => {
     }
   })
   expect(isolated).toBe('isolated')
+
+  await page
+    .getByRole('button', { name: 'Copy all custom HTML code' })
+    .click()
+  await expect(page.getByRole('status')).toContainText(
+    'Copied HTML, CSS and JavaScript',
+  )
 
   const sandbox = await page.locator('.custom-html-dialog iframe').getAttribute('sandbox')
   expect(sandbox).toContain('allow-scripts')
@@ -89,6 +109,16 @@ test('custom HTML inserts an auto-sized block and supports preview/edit', async 
   expect(height).toBeGreaterThan(100)
 
   await block.hover()
+  await page.getByRole('button', { name: 'Download custom HTML' }).click()
+  await expect(
+    page.getByRole('dialog', { name: 'Download standalone HTML?' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('dialog', { name: 'Download standalone HTML?' }),
+  ).toContainText('not sandboxed')
+  await page.getByRole('button', { name: 'Cancel' }).click()
+
+  await block.hover()
   await page.getByRole('button', { name: 'Preview custom HTML' }).click()
   await expect(
     page.getByRole('dialog', { name: 'Custom HTML preview' }),
@@ -103,6 +133,34 @@ test('custom HTML inserts an auto-sized block and supports preview/edit', async 
     page.getByRole('dialog', { name: 'Edit custom block' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Cancel' }).click()
+})
+
+test('advanced sandbox options can disable scripts and network', async ({
+  page,
+}) => {
+  await openCustomHtml(page)
+  const frame = page.frameLocator('.custom-html-dialog iframe')
+  await expect(frame.locator('.custom-card')).toBeVisible()
+
+  await page.locator('.custom-html-advanced summary').click()
+  await page.getByLabel('Run JavaScript').uncheck()
+  await expect(page.locator('.custom-html-dialog iframe')).not.toHaveAttribute(
+    'sandbox',
+    /allow-scripts/,
+  )
+  await frame.locator('#custom-action').click()
+  await expect(frame.locator('#custom-action')).toHaveText('Clicked 0 times')
+
+  await page.getByLabel('Allow network').uncheck()
+  await expect(page.locator('.custom-html-dialog iframe')).toHaveAttribute(
+    'srcdoc',
+    /default-src 'none'/,
+  )
+  await page.getByLabel('Allow popups').check()
+  await expect(page.locator('.custom-html-dialog iframe')).toHaveAttribute(
+    'sandbox',
+    /allow-popups/,
+  )
 })
 
 test('custom HTML reports script errors without breaking the block', async ({

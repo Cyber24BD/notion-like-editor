@@ -23,8 +23,9 @@ export function CustomHtmlDialogHost() {
       initialHtml={options.initialHtml}
       initialCss={options.initialCss}
       initialJavascript={options.initialJavascript}
-      onApply={(html, css, javascript) => {
-        options.onApply(html, css, javascript)
+      initialOptions={options.initialOptions}
+      onApply={(html, css, javascript, nextOptions) => {
+        options.onApply(html, css, javascript, nextOptions)
         closeCustomHtmlDialog()
       }}
       onClose={closeCustomHtmlDialog}

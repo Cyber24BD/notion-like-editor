@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { createNotionPortal } from '../NotionPortal'
 import { CustomHtmlFrame } from '../custom-html/CustomHtmlFrame'
+import { CustomHtmlDownloadWarning } from '../custom-html/CustomHtmlDownloadWarning'
 import { openCustomHtmlDialog } from '../../editor/customHtml/dialogStore'
-import { downloadCustomHtml } from '../../editor/customHtml/document'
+import {
+  downloadCustomHtml,
+  type CustomHtmlSandboxOptions,
+} from '../../editor/customHtml/document'
 import { Code, Download, Maximize, Pencil, Refresh, Trash, X } from '../Icons'
 
 export function CustomHtmlView({
@@ -16,11 +20,20 @@ export function CustomHtmlView({
   const html = String(node.attrs.html ?? '')
   const css = String(node.attrs.css ?? '')
   const javascript = String(node.attrs.javascript ?? '')
+  const allowScripts = node.attrs.allowScripts !== false
+  const allowForms = node.attrs.allowForms !== false
+  const allowPopups = node.attrs.allowPopups === true
+  const allowNetwork = node.attrs.allowNetwork !== false
+  const options = useMemo<CustomHtmlSandboxOptions>(
+    () => ({ allowScripts, allowForms, allowPopups, allowNetwork }),
+    [allowScripts, allowForms, allowPopups, allowNetwork],
+  )
   const empty = !html.trim() && !css.trim() && !javascript.trim()
 
   const [frameError, setFrameError] = useState('')
   const [frameKey, setFrameKey] = useState(0)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
 
   useEffect(() => {
     setFrameError('')
@@ -32,11 +45,13 @@ export function CustomHtmlView({
       initialHtml: html,
       initialCss: css,
       initialJavascript: javascript,
-      onApply: (nextHtml, nextCss, nextJavascript) =>
+      initialOptions: options,
+      onApply: (nextHtml, nextCss, nextJavascript, nextOptions) =>
         updateAttributes({
           html: nextHtml,
           css: nextCss,
           javascript: nextJavascript,
+          ...nextOptions,
         }),
     })
   }
@@ -52,7 +67,7 @@ export function CustomHtmlView({
   }
 
   const download = () => {
-    downloadCustomHtml({ html, css, javascript })
+    downloadCustomHtml({ html, css, javascript }, options)
   }
 
   return (
@@ -107,7 +122,7 @@ export function CustomHtmlView({
           aria-label="Download custom HTML"
           title="Download HTML"
           disabled={empty}
-          onClick={download}
+          onClick={() => setDownloadOpen(true)}
         >
           <Download size={14} />
         </button>
@@ -137,6 +152,7 @@ export function CustomHtmlView({
             html={html}
             css={css}
             javascript={javascript}
+            options={options}
             title="Custom HTML block"
             reloadKey={frameKey}
             minHeight={100}
@@ -150,6 +166,16 @@ export function CustomHtmlView({
         <div className="custom-html-block__error" role="alert">
           {frameError}
         </div>
+      )}
+
+      {downloadOpen && (
+        <CustomHtmlDownloadWarning
+          onCancel={() => setDownloadOpen(false)}
+          onConfirm={() => {
+            setDownloadOpen(false)
+            download()
+          }}
+        />
       )}
 
       {previewOpen &&
@@ -182,6 +208,7 @@ export function CustomHtmlView({
                 html={html}
                 css={css}
                 javascript={javascript}
+                options={options}
                 title="Custom HTML preview"
                 autoHeight={false}
                 height="72vh"

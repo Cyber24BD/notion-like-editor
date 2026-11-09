@@ -6,6 +6,20 @@ export interface CustomHtmlSource {
   javascript: string
 }
 
+export interface CustomHtmlSandboxOptions {
+  allowScripts: boolean
+  allowForms: boolean
+  allowPopups: boolean
+  allowNetwork: boolean
+}
+
+export const DEFAULT_CUSTOM_HTML_OPTIONS: CustomHtmlSandboxOptions = {
+  allowScripts: true,
+  allowForms: true,
+  allowPopups: false,
+  allowNetwork: true,
+}
+
 export const DEFAULT_CUSTOM_HTML = `<div class="custom-card">
   <span class="custom-eyebrow">CUSTOM BLOCK</span>
   <h2>Make it yours</h2>
@@ -75,8 +89,22 @@ function toBase64(value: string): string {
   return btoa(binary)
 }
 
-const BRIDGE = `
-<script>
+function escapeStyle(css: string): string {
+  // Keep user CSS inside its style element even when the source includes a
+  // closing style tag in a string or comment.
+  return css.replace(/<\/style/gi, '<\\/style')
+}
+
+function sandboxCsp(options: CustomHtmlSandboxOptions): string {
+  if (options.allowNetwork) return ''
+  const script = options.allowScripts
+    ? "'unsafe-inline' 'unsafe-eval'"
+    : "'none'"
+  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; script-src ${script}; form-action 'none'; base-uri 'none'">`
+}
+
+function bridgeScript(): string {
+  return `<script>
 (function () {
   var channel = '${CUSTOM_HTML_CHANNEL}';
   function send(type, payload) {
@@ -114,18 +142,13 @@ const BRIDGE = `
   setTimeout(reportHeight, 500);
 })();
 </script>`
+}
 
-/**
- * Builds a self-contained document for the sandboxed frame. CSS and JS are
- * base64-loaded so user strings such as `</style>` or `</script>` cannot break
- * out of their containers. HTML is intentionally raw: that is the feature.
- */
-export function buildCustomHtmlDocument(source: CustomHtmlSource): string {
-  const css = toBase64(source.css)
-  const javascript = source.javascript.trim()
-    ? `<script>
+function userScript(code: string): string {
+  if (!code.trim()) return ''
+  return `<script>
 try {
-  var run = new Function('return (async function () {' + String.fromCharCode(10) + atob('${toBase64(source.javascript)}') + String.fromCharCode(10) + '})()');
+  var run = new Function('return (async function () {' + String.fromCharCode(10) + atob('${toBase64(code)}') + String.fromCharCode(10) + '})()');
   Promise.resolve(run()).catch(function (error) {
     parent.postMessage({
       channel: '${CUSTOM_HTML_CHANNEL}',
@@ -141,7 +164,21 @@ try {
   }, '*');
 }
 </script>`
-    : ''
+}
+
+/**
+ * Builds a self-contained document for the sandboxed frame. User JavaScript is
+ * base64-loaded into an async function so `await` works and `</script>` cannot
+ * break out. HTML is intentionally raw: custom markup is the feature.
+ */
+export function buildCustomHtmlDocument(
+  source: CustomHtmlSource,
+  options: CustomHtmlSandboxOptions = DEFAULT_CUSTOM_HTML_OPTIONS,
+): string {
+  const scripts = options.allowScripts
+  const security = sandboxCsp(options)
+  const bridge = scripts ? bridgeScript() : ''
+  const javascript = scripts ? userScript(source.javascript) : ''
 
   return `<!doctype html>
 <html>
@@ -149,14 +186,10 @@ try {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+${security}
 <style>html,body{margin:0;padding:0}body{min-height:1px}*,*::before,*::after{box-sizing:border-box}</style>
-<style id="notion-custom-html-css"></style>
-${BRIDGE}
-<script>
-try {
-  document.getElementById('notion-custom-html-css').textContent = atob('${css}');
-} catch (error) {}
-</script>
+<style id="notion-custom-html-css">${escapeStyle(source.css)}</style>
+${bridge}
 </head>
 <body>
 ${source.html}
@@ -165,8 +198,12 @@ ${javascript}
 </html>`
 }
 
-export function downloadCustomHtml(source: CustomHtmlSource): void {
-  const blob = new Blob([buildCustomHtmlDocument(source)], {
+export function downloadCustomHtml(
+  source: CustomHtmlSource,
+  options: CustomHtmlSandboxOptions = DEFAULT_CUSTOM_HTML_OPTIONS,
+): void {
+  const warning = `<!-- Standalone export. This file is not sandboxed. Only open code you trust. -->\n`
+  const blob = new Blob([warning + buildCustomHtmlDocument(source, options)], {
     type: 'text/html;charset=utf-8',
   })
   const url = URL.createObjectURL(blob)

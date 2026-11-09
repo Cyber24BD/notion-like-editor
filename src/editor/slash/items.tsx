@@ -37,6 +37,7 @@ import { openCustomHtmlDialog } from '../customHtml/dialogStore'
 import {
   DEFAULT_CUSTOM_CSS,
   DEFAULT_CUSTOM_HTML,
+  DEFAULT_CUSTOM_HTML_OPTIONS,
   DEFAULT_CUSTOM_JAVASCRIPT,
 } from '../customHtml/document'
 import { MERMAID_TEMPLATES } from '../mermaid/templates'
@@ -439,8 +440,13 @@ export const slashItems: SlashItem[] = [
         initialHtml: DEFAULT_CUSTOM_HTML,
         initialCss: DEFAULT_CUSTOM_CSS,
         initialJavascript: DEFAULT_CUSTOM_JAVASCRIPT,
-        onApply: (html, css, javascript) => {
-          editor.chain().focus().setCustomHtml({ html, css, javascript }).run()
+        initialOptions: DEFAULT_CUSTOM_HTML_OPTIONS,
+        onApply: (html, css, javascript, options) => {
+          editor
+            .chain()
+            .focus()
+            .setCustomHtml({ html, css, javascript, ...options })
+            .run()
         },
       })
     },

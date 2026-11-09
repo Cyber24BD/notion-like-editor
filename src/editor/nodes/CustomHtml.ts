@@ -6,6 +6,16 @@ export interface CustomHtmlAttributes {
   html: string
   css: string
   javascript: string
+  allowScripts: boolean
+  allowForms: boolean
+  allowPopups: boolean
+  allowNetwork: boolean
+}
+
+function parseBoolean(value: string | null, fallback: boolean): boolean {
+  if (value === 'false') return false
+  if (value === 'true') return true
+  return fallback
 }
 
 declare module '@tiptap/core' {
@@ -43,6 +53,38 @@ export const CustomHtml = Node.create({
           'data-javascript': attributes.javascript,
         }),
       },
+      allowScripts: {
+        default: true,
+        parseHTML: (element) =>
+          parseBoolean(element.getAttribute('data-allow-scripts'), true),
+        renderHTML: (attributes) => ({
+          'data-allow-scripts': String(attributes.allowScripts),
+        }),
+      },
+      allowForms: {
+        default: true,
+        parseHTML: (element) =>
+          parseBoolean(element.getAttribute('data-allow-forms'), true),
+        renderHTML: (attributes) => ({
+          'data-allow-forms': String(attributes.allowForms),
+        }),
+      },
+      allowPopups: {
+        default: false,
+        parseHTML: (element) =>
+          parseBoolean(element.getAttribute('data-allow-popups'), false),
+        renderHTML: (attributes) => ({
+          'data-allow-popups': String(attributes.allowPopups),
+        }),
+      },
+      allowNetwork: {
+        default: true,
+        parseHTML: (element) =>
+          parseBoolean(element.getAttribute('data-allow-network'), true),
+        renderHTML: (attributes) => ({
+          'data-allow-network': String(attributes.allowNetwork),
+        }),
+      },
     }
   },
 
@@ -59,6 +101,10 @@ export const CustomHtml = Node.create({
         'data-html': attrs.html,
         'data-css': attrs.css,
         'data-javascript': attrs.javascript,
+        'data-allow-scripts': String(attrs.allowScripts),
+        'data-allow-forms': String(attrs.allowForms),
+        'data-allow-popups': String(attrs.allowPopups),
+        'data-allow-network': String(attrs.allowNetwork),
         class: 'custom-html-block',
       }),
       ['p', {}, 'Custom HTML block'],
@@ -79,6 +125,10 @@ export const CustomHtml = Node.create({
             html: '',
             css: '',
             javascript: '',
+            allowScripts: true,
+            allowForms: true,
+            allowPopups: false,
+            allowNetwork: true,
             ...attributes,
           })
           if (!node) return false

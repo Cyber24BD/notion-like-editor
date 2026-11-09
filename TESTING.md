@@ -38,8 +38,9 @@ Playwright starts Vite on port `5199` and uses:
   are covered in `tests/e2e/p2.spec.ts`
 - All 23 Mermaid templates, invalid syntax cleanup and dark Mermaid surfaces are
   covered in `tests/e2e/mermaid.spec.ts`
-- Sandboxed Custom HTML editing, isolation, script errors and auto-sized blocks
-  are covered in `tests/e2e/custom-html.spec.ts`
+- Sandboxed Custom HTML editing, isolation, advanced sandbox controls, script errors,
+  focus trapping, download warnings and auto-sized blocks are covered in
+  `tests/e2e/custom-html.spec.ts`
 
 Useful commands:
 

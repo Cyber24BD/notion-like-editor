@@ -2,10 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildCustomHtmlDocument,
   CUSTOM_HTML_CHANNEL,
+  DEFAULT_CUSTOM_HTML_OPTIONS,
+  type CustomHtmlSandboxOptions,
   type CustomHtmlSource,
 } from '../../editor/customHtml/document'
 
 export interface CustomHtmlFrameProps extends CustomHtmlSource {
+  options?: CustomHtmlSandboxOptions
   title?: string
   autoHeight?: boolean
   minHeight?: number
@@ -28,6 +31,7 @@ export function CustomHtmlFrame({
   html,
   css,
   javascript,
+  options = DEFAULT_CUSTOM_HTML_OPTIONS,
   title = 'Custom HTML',
   autoHeight = true,
   minHeight = 160,
@@ -42,9 +46,16 @@ export function CustomHtmlFrame({
   const [measuredHeight, setMeasuredHeight] = useState(minHeight)
 
   const srcDoc = useMemo(
-    () => buildCustomHtmlDocument({ html, css, javascript }),
-    [html, css, javascript],
+    () => buildCustomHtmlDocument({ html, css, javascript }, options),
+    [html, css, javascript, options],
   )
+  const sandbox = [
+    options.allowScripts ? 'allow-scripts' : '',
+    options.allowForms ? 'allow-forms' : '',
+    options.allowPopups ? 'allow-popups' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   useEffect(() => {
     setMeasuredHeight(minHeight)
@@ -81,7 +92,7 @@ export function CustomHtmlFrame({
       key={reloadKey}
       ref={iframeRef}
       className={`custom-html-frame ${className}`.trim()}
-      sandbox="allow-scripts allow-forms"
+      sandbox={sandbox}
       referrerPolicy="no-referrer"
       title={title}
       srcDoc={srcDoc}
