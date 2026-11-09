@@ -52,13 +52,26 @@ export default function App() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey
-      if (mod && !event.shiftKey && event.key.toLowerCase() === 'k') {
+      const key = event.key.toLowerCase()
+      const target = event.target as HTMLElement | null
+      const editing = target?.closest(
+        'input, textarea, select, [contenteditable="true"]',
+      )
+      if (mod && !event.shiftKey && key === 'k') {
         event.preventDefault()
         setPaletteOpen(true)
       }
-      if (mod && event.shiftKey && event.key.toLowerCase() === 'm') {
+      if (mod && event.shiftKey && key === 'm') {
         event.preventDefault()
         theme.cycle()
+      }
+      // The editor handles Cmd/Ctrl+F and H while it owns focus. When focus is
+      // on the top bar or sidebar, route the command to the active editor.
+      if (!editing && mod && !event.shiftKey && (key === 'f' || key === 'h')) {
+        event.preventDefault()
+        window.dispatchEvent(
+          new Event(key === 'f' ? 'notion:find' : 'notion:replace'),
+        )
       }
     }
     window.addEventListener('keydown', onKeyDown)

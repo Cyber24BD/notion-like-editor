@@ -494,8 +494,16 @@ function PageEditor({
 
   useEffect(() => {
     const openShortcuts = () => setShortcutsOpen(true)
+    const openFind = () => setFindMode('find')
+    const openReplace = () => setFindMode('replace')
     window.addEventListener('notion:shortcuts', openShortcuts)
-    return () => window.removeEventListener('notion:shortcuts', openShortcuts)
+    window.addEventListener('notion:find', openFind)
+    window.addEventListener('notion:replace', openReplace)
+    return () => {
+      window.removeEventListener('notion:shortcuts', openShortcuts)
+      window.removeEventListener('notion:find', openFind)
+      window.removeEventListener('notion:replace', openReplace)
+    }
   }, [])
 
   const navigatePage = onNavigatePage ?? (() => undefined)

@@ -107,6 +107,16 @@ test('keyboard shortcuts dialog is discoverable and closes with Escape', async (
   await expect(dialog).toHaveCount(0)
 })
 
+test('find opens when focus is on the app top bar', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.notion-page-title')).toBeVisible()
+  await page.locator('.topbar .notion-icon-btn').first().focus()
+  await page.keyboard.press('Control+f')
+  await expect(page.locator('.find-bar')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.find-bar')).toHaveCount(0)
+})
+
 test('mobile table toolbar stays inside the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 })
   await page.goto('/harness.html')

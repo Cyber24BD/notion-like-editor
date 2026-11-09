@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 test.beforeEach(async ({ page }) => {
   await page.goto('/harness.html')
   await expect(page.locator('.notion-editor')).toBeVisible()
+  await expect(page.getByTestId('harness-status')).toContainText('Ready: yes')
 })
 
 async function openCustomHtml(page: import('@playwright/test').Page) {
@@ -10,6 +11,10 @@ async function openCustomHtml(page: import('@playwright/test').Page) {
   await page.keyboard.press('End')
   await page.keyboard.press('Enter')
   await page.keyboard.type('/custom html')
+  await expect(page.locator('.slash-menu')).toBeVisible()
+  await expect(
+    page.locator('.slash-menu__title').filter({ hasText: 'Custom HTML' }),
+  ).toBeVisible()
   await page.keyboard.press('Enter')
   await expect(
     page.getByRole('dialog', { name: /Custom HTML block|Edit custom block/ }),
@@ -43,14 +48,11 @@ test('custom HTML runs isolated HTML, CSS and JavaScript', async ({ page }) => {
   await page.getByRole('textbox', { name: 'css code' }).fill(
     '.custom-card { background: rgb(1, 2, 3); }',
   )
-  await expect
-    .poll(async () => {
-      const frame = page.frameLocator('.custom-html-dialog iframe')
-      return frame.locator('.custom-card').evaluate((element) => {
-        return getComputedStyle(element).backgroundColor
-      })
-    })
-    .toBe('rgb(1, 2, 3)')
+  await expect(
+    page
+      .frameLocator('.custom-html-dialog iframe')
+      .locator('.custom-card'),
+  ).toHaveCSS('background-color', 'rgb(1, 2, 3)')
 
   await page.getByRole('tab', { name: 'HTML' }).click()
   await page.getByRole('textbox', { name: 'html code' }).fill(
@@ -60,9 +62,9 @@ test('custom HTML runs isolated HTML, CSS and JavaScript', async ({ page }) => {
 
   await page.getByRole('tab', { name: 'JavaScript' }).click()
   await page.getByRole('textbox', { name: 'javascript code' }).fill(
-    "document.body.dataset.script = 'ran'",
+    "const value = await Promise.resolve('async-ok'); document.body.dataset.async = value",
   )
-  await expect(preview.locator('body')).toHaveAttribute('data-script', 'ran')
+  await expect(preview.locator('body')).toHaveAttribute('data-async', 'async-ok')
 })
 
 test('custom HTML inserts an auto-sized block and supports preview/edit', async ({

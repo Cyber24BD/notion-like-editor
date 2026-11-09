@@ -125,7 +125,14 @@ export function buildCustomHtmlDocument(source: CustomHtmlSource): string {
   const javascript = source.javascript.trim()
     ? `<script>
 try {
-  new Function(atob('${toBase64(source.javascript)}'))();
+  var run = new Function('return (async function () {' + String.fromCharCode(10) + atob('${toBase64(source.javascript)}') + String.fromCharCode(10) + '})()');
+  Promise.resolve(run()).catch(function (error) {
+    parent.postMessage({
+      channel: '${CUSTOM_HTML_CHANNEL}',
+      type: 'error',
+      message: error && error.message ? error.message : 'Custom script error'
+    }, '*');
+  });
 } catch (error) {
   parent.postMessage({
     channel: '${CUSTOM_HTML_CHANNEL}',
