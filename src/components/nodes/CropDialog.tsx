@@ -6,6 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createNotionPortal } from '../NotionPortal'
+import { useFocusTrap } from '../useFocusTrap'
 import { cropImageSource, type ImageServices } from '../../editor/images/imageFiles'
 import { X } from '../Icons'
 
@@ -69,6 +70,8 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
   const [error, setError] = useState<string | null>(null)
   const [natural, setNatural] = useState<{ width: number; height: number } | null>(null)
   const [stageSize, setStageSize] = useState<{ width: number; height: number } | null>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const stageRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const cropRef = useRef(crop)
@@ -188,6 +191,7 @@ export function CropDialog({ src, services, onClose, onApply }: CropDialogProps)
       }}
     >
       <div
+        ref={dialogRef}
         className="crop-dialog"
         role="dialog"
         aria-modal="true"

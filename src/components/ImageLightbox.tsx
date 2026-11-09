@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   AspectRatio,
   Check,
@@ -102,6 +103,7 @@ export function ImageLightbox({
   const [reloadKey, setReloadKey] = useState(0)
 
   const overlayRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(overlayRef)
   const stageRef = useRef<HTMLDivElement>(null)
   const panRef = useRef<{
     startX: number

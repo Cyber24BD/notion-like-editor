@@ -8,6 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   defaultBookmarkAttrs,
   fallbackBookmarkMetadata,
@@ -43,6 +44,8 @@ export function BookmarkDialog({
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState('')
   const [pendingFetch, setPendingFetch] = useState<string | null>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLInputElement>(null)
   const mountedRef = useRef(true)
   const requestIdRef = useRef(0)
@@ -216,6 +219,7 @@ export function BookmarkDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()

@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   buildAudioEmbedUrl,
   defaultAudioAttrs,
@@ -45,6 +46,8 @@ export function AudioDialog({
   const [height, setHeight] = useState(
     clampHeight(initial?.height ?? FILE_HEIGHT),
   )
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const didMountRef = useRef(false)
   const lastDefaultHeightRef = useRef<number | null>(null)
@@ -128,6 +131,7 @@ export function AudioDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()

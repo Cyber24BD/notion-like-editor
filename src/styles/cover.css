@@ -9,15 +9,25 @@
   overflow: hidden;
   background: var(--hover);
   touch-action: none;
+}
+
+.notion-page-cover__position {
+  position: absolute;
+  inset: 0;
   cursor: grab;
 }
 
-.notion-page-cover[data-repositionable='false'] {
+.notion-page-cover[data-repositionable='false'] .notion-page-cover__position {
   cursor: default;
 }
 
-.notion-page-cover[data-dragging='true'] {
+.notion-page-cover[data-dragging='true'] .notion-page-cover__position {
   cursor: grabbing;
+}
+
+.notion-page-cover__position:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .notion-page-cover__image {
@@ -36,6 +46,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  z-index: 1;
   opacity: 0;
   transition: opacity var(--dur-fast) var(--ease-out);
 }

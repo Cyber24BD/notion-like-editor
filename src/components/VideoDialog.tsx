@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   buildVideoEmbedUrl,
   defaultVideoAttrs,
@@ -43,6 +44,8 @@ export function VideoDialog({
   const [startText, setStartText] = useState(formatStartTime(initial?.start ?? 0))
   const [autoplay, setAutoplay] = useState(initial?.autoplay ?? false)
   const [privacy, setPrivacy] = useState(initial?.privacy ?? true)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const parsed = useMemo(() => parseVideoUrl(url), [url])
@@ -117,6 +120,7 @@ export function VideoDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()

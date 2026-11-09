@@ -8,6 +8,7 @@ import {
   useState,
   type MouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import type { Editor, Extensions, JSONContent } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
@@ -554,6 +555,7 @@ function PageEditor({
     const target = event.target as HTMLElement
     if (target.closest('.notion-page-cover-actions')) return
     event.preventDefault()
+    event.currentTarget.focus()
     event.currentTarget.setPointerCapture(event.pointerId)
     coverDragRef.current = {
       startY: event.clientY,
@@ -582,6 +584,38 @@ function PageEditor({
     }
   }
 
+  const handleCoverKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!onCoverPositionChange) return
+    let next = safeCoverPosition
+    switch (event.key) {
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        next -= event.shiftKey ? 10 : 2
+        break
+      case 'ArrowDown':
+      case 'ArrowRight':
+        next += event.shiftKey ? 10 : 2
+        break
+      case 'PageUp':
+        next -= 10
+        break
+      case 'PageDown':
+        next += 10
+        break
+      case 'Home':
+        next = 0
+        break
+      case 'End':
+        next = 100
+        break
+      default:
+        return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    onCoverPositionChange(Math.max(0, Math.min(100, next)))
+  }
+
   return (
     <div className="notion-editor-root" ref={rootRef}>
       <div
@@ -607,18 +641,33 @@ function PageEditor({
             className="notion-page-cover"
             data-dragging={coverDragging ? 'true' : 'false'}
             data-repositionable={onCoverPositionChange ? 'true' : 'false'}
-            onPointerDown={handleCoverPointerDown}
-            onPointerMove={handleCoverPointerMove}
-            onPointerUp={finishCoverDrag}
-            onPointerCancel={finishCoverDrag}
           >
-            <img
-              className="notion-page-cover__image"
-              src={cover}
-              alt=""
-              draggable={false}
-              style={{ objectPosition: `center ${safeCoverPosition}%` }}
-            />
+            <div
+              className="notion-page-cover__position"
+              role={onCoverPositionChange ? 'slider' : undefined}
+              tabIndex={onCoverPositionChange ? 0 : undefined}
+              aria-label="Cover position"
+              aria-valuemin={onCoverPositionChange ? 0 : undefined}
+              aria-valuemax={onCoverPositionChange ? 100 : undefined}
+              aria-valuenow={onCoverPositionChange ? safeCoverPosition : undefined}
+              aria-valuetext={
+                onCoverPositionChange ? `${safeCoverPosition}%` : undefined
+              }
+              aria-orientation="vertical"
+              onPointerDown={handleCoverPointerDown}
+              onPointerMove={handleCoverPointerMove}
+              onPointerUp={finishCoverDrag}
+              onPointerCancel={finishCoverDrag}
+              onKeyDown={handleCoverKeyDown}
+            >
+              <img
+                className="notion-page-cover__image"
+                src={cover}
+                alt=""
+                draggable={false}
+                style={{ objectPosition: `center ${safeCoverPosition}%` }}
+              />
+            </div>
             <div
               className="notion-page-cover-actions"
               onPointerDown={(event) => event.stopPropagation()}
@@ -635,7 +684,7 @@ function PageEditor({
               )}
               {onCoverPositionChange && (
                 <span className="notion-page-cover-hint">
-                  Drag to reposition
+                  Drag or use arrow keys
                 </span>
               )}
               {onCoverChange && (

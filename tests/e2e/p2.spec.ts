@@ -20,6 +20,16 @@ test('page cover uploads, repositions and removes', async ({ page }, testInfo) =
   await expect(cover).toBeVisible()
   await expect(cover.locator('img')).toHaveAttribute('src', /^data:image\//)
 
+  const positionControl = page.locator('.notion-page-cover__position')
+  await positionControl.focus()
+  await expect(positionControl).toHaveAttribute('aria-valuenow', '50')
+  await page.keyboard.press('End')
+  await expect(positionControl).toHaveAttribute('aria-valuenow', '100')
+  await page.keyboard.press('Home')
+  await expect(positionControl).toHaveAttribute('aria-valuenow', '0')
+  await page.keyboard.press('ArrowDown')
+  await expect(positionControl).toHaveAttribute('aria-valuenow', '2')
+
   const before = await cover.locator('img').evaluate((element) => {
     return getComputedStyle(element).objectPosition
   })

@@ -3,10 +3,14 @@ import type { PageTreeNode } from '../types'
 import type { WorkspaceApi } from '../store/usePages'
 import type { ThemeApi } from '../hooks/useTheme'
 import { Menu, type MenuNode } from './Menu'
+import { MovePageDialog } from './MovePageDialog'
 import { formatShortcut } from '../editor/shortcuts'
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   FileText,
   Monitor,
@@ -36,24 +40,32 @@ interface TreeItemProps {
   node: PageTreeNode
   activeId: string
   nextSiblingId: string | null
+  siblings: PageTreeNode[]
+  parentParentId: string | null
+  parentNextSiblingId: string | null
   onSelect: (id: string) => void
   onRename: (id: string, title: string) => void
   onDuplicate: (id: string) => void
   onDelete: (id: string) => void
   onCreateChild: (parentId: string) => void
   onMove: (id: string, parentId: string | null, beforeId: string | null) => void
+  onMoveToPage: (id: string) => void
 }
 
 function TreeItem({
   node,
   activeId,
   nextSiblingId,
+  siblings,
+  parentParentId,
+  parentNextSiblingId,
   onSelect,
   onRename,
   onDuplicate,
   onDelete,
   onCreateChild,
   onMove,
+  onMoveToPage,
 }: TreeItemProps) {
   const [expanded, setExpanded] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -132,6 +144,11 @@ function TreeItem({
     onMove(id, node.parentId, position === 'before' ? node.id : nextSiblingId)
   }
 
+  const siblingIndex = siblings.findIndex((sibling) => sibling.id === node.id)
+  const previousSibling = siblingIndex > 0 ? siblings[siblingIndex - 1] : null
+  const nextSibling = siblingIndex >= 0 ? siblings[siblingIndex + 1] ?? null : null
+  const nextNextSibling = siblingIndex >= 0 ? siblings[siblingIndex + 2] ?? null : null
+
   const entries: MenuNode[] = [
     {
       id: 'rename',
@@ -150,6 +167,52 @@ function TreeItem({
       label: 'Add sub-page',
       icon: <Plus size={15} />,
       onSelect: () => onCreateChild(node.id),
+    },
+    { type: 'separator', id: 'move-sep' },
+    {
+      id: 'move-up',
+      label: 'Move up',
+      icon: <ArrowUp size={15} />,
+      disabled: !previousSibling,
+      onSelect: () => {
+        if (previousSibling) onMove(node.id, node.parentId, previousSibling.id)
+      },
+    },
+    {
+      id: 'move-down',
+      label: 'Move down',
+      icon: <ArrowDown size={15} />,
+      disabled: !nextSibling,
+      onSelect: () => {
+        if (nextSibling) onMove(node.id, node.parentId, nextNextSibling?.id ?? null)
+      },
+    },
+    {
+      id: 'indent',
+      label: 'Indent / nest',
+      icon: <ChevronRight size={15} />,
+      disabled: !previousSibling,
+      onSelect: () => {
+        if (!previousSibling) return
+        setExpanded(true)
+        onMove(node.id, previousSibling.id, null)
+      },
+    },
+    {
+      id: 'outdent',
+      label: 'Move out',
+      icon: <ChevronLeft size={15} />,
+      disabled: node.parentId === null,
+      onSelect: () => {
+        if (node.parentId === null) return
+        onMove(node.id, parentParentId, parentNextSiblingId)
+      },
+    },
+    {
+      id: 'move-to-page',
+      label: 'Move to page…',
+      icon: <FileText size={15} />,
+      onSelect: () => onMoveToPage(node.id),
     },
     { type: 'separator', id: 'sep' },
     {
@@ -251,12 +314,16 @@ function TreeItem({
             node={child}
             activeId={activeId}
             nextSiblingId={node.children[index + 1]?.id ?? null}
+            siblings={node.children}
+            parentParentId={node.parentId}
+            parentNextSiblingId={nextSiblingId}
             onSelect={onSelect}
             onRename={onRename}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
             onCreateChild={onCreateChild}
             onMove={onMove}
+            onMoveToPage={onMoveToPage}
           />
         ))}
 
@@ -264,7 +331,7 @@ function TreeItem({
         <Menu
           x={menuAt.x}
           y={menuAt.y}
-          width={208}
+          width={232}
           entries={entries}
           onClose={() => setMenuAt(null)}
         />
@@ -283,6 +350,7 @@ export function Sidebar({
   theme,
 }: SidebarProps) {
   const [workspaceMenuAt, setWorkspaceMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const [movePageId, setMovePageId] = useState<string | null>(null)
   const isMac =
     typeof navigator !== 'undefined' &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
@@ -393,6 +461,9 @@ export function Sidebar({
                 node={node}
                 activeId={workspace.activeId}
                 nextSiblingId={workspace.tree[index + 1]?.id ?? null}
+                siblings={workspace.tree}
+                parentParentId={null}
+                parentNextSiblingId={null}
                 onSelect={(id) => {
                   workspace.setActive(id)
                   if (isMobile) onClose()
@@ -416,6 +487,7 @@ export function Sidebar({
                   if (isMobile) onClose()
                 }}
                 onMove={workspace.movePage}
+                onMoveToPage={setMovePageId}
               />
             ))}
             {workspace.tree.length === 0 && (
@@ -444,6 +516,15 @@ export function Sidebar({
           </div>
         </div>
       </div>
+
+      {movePageId && (
+        <MovePageDialog
+          pageId={movePageId}
+          tree={workspace.tree}
+          onMove={workspace.movePage}
+          onClose={() => setMovePageId(null)}
+        />
+      )}
 
       {workspaceMenuAt && (
         <Menu

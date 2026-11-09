@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { X } from './Icons'
+import { useFocusTrap } from './useFocusTrap'
 
 const EMOJI_GROUPS: { label: string; emojis: string[] }[] = [
   {
@@ -37,6 +38,7 @@ interface EmojiPickerProps {
 
 export function EmojiPicker({ onSelect, onClose, onRemove, className }: EmojiPickerProps) {
   const ref = useRef<HTMLDivElement>(null)
+  useFocusTrap(ref)
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {

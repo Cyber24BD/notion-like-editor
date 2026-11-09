@@ -13,6 +13,8 @@
 - Upgraded editor KaTeX to 0.19.1; the remaining low advisory is Mermaid's internal KaTeX copy and is documented.
 - Added page covers with upload/change/remove and vertical focal-point dragging.
 - Added drag-to-reorder and drag-to-nest pages in the sidebar with cycle protection.
+- Added keyboard/touch page-menu actions for Move up/down, Indent, Move out and Move to page.
+- Added focus traps to modal dialogs and keyboard-accessible page-cover positioning.
 - Added in-page find/replace with match highlighting and replace-all.
 - Added a complete keyboard shortcuts dialog and shortcut documentation.
 - Polished image/table toolbars on narrow screens with a fixed bottom action bar.

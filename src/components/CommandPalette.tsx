@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PageTreeNode } from '../types'
 import { FileText, Plus, Search } from './Icons'
+import { useFocusTrap } from './useFocusTrap'
 
 interface CommandPaletteProps {
   open: boolean
@@ -26,7 +27,9 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [index, setIndex] = useState(0)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  useFocusTrap(dialogRef, open)
 
   const flatPages = useMemo(() => {
     const out: FlatPage[] = []
@@ -84,6 +87,7 @@ export function CommandPalette({
   return (
     <div className="palette-scrim" onPointerDown={onClose}>
       <div
+        ref={dialogRef}
         className="palette"
         role="dialog"
         aria-modal="true"

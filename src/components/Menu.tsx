@@ -48,6 +48,15 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
   }, [x, y, width, align])
 
   useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null
+    const items = () =>
+      Array.from(
+        ref.current?.querySelectorAll<HTMLButtonElement>(
+          '[role="menuitem"]:not(:disabled)',
+        ) ?? [],
+      )
+    const frame = window.requestAnimationFrame(() => items()[0]?.focus())
+
     const onPointerDown = (event: PointerEvent) => {
       if (!ref.current?.contains(event.target as Node)) onClose()
     }
@@ -55,13 +64,31 @@ export function Menu({ x, y, entries, onClose, width = 220, align = 'left', head
       if (event.key === 'Escape') {
         event.preventDefault()
         onClose()
+        return
       }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+      const list = items()
+      if (list.length === 0) return
+      event.preventDefault()
+      const current = list.indexOf(document.activeElement as HTMLButtonElement)
+      const next =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? list.length - 1
+            : event.key === 'ArrowDown'
+              ? (current + 1 + list.length) % list.length
+              : (current - 1 + list.length) % list.length
+      list[next]?.focus()
     }
+
     document.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('keydown', onKeyDown)
     return () => {
+      window.cancelAnimationFrame(frame)
       document.removeEventListener('pointerdown', onPointerDown, true)
       document.removeEventListener('keydown', onKeyDown)
+      if (previous?.isConnected) previous.focus()
     }
   }, [onClose])
 

@@ -1,10 +1,12 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import { ChartSvg } from './ChartSvg'
 import {
   CHART_KINDS,
@@ -55,6 +57,8 @@ export function ChartSettingsDialog({
   onClose,
 }: ChartSettingsDialogProps) {
   const [draft, setDraft] = useState<ChartData>(() => clone(initial))
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const isPie = draft.kind === 'pie' || draft.kind === 'donut'
   const visibleSeries = isPie ? draft.series.slice(0, 1) : draft.series
 
@@ -178,6 +182,7 @@ export function ChartSettingsDialog({
       }}
     >
       <div
+        ref={dialogRef}
         className="chart-dialog"
         role="dialog"
         aria-modal="true"

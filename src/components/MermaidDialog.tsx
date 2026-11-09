@@ -6,6 +6,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   formatMermaidError,
   mermaidLiveUrl,
@@ -52,6 +53,8 @@ export function MermaidDialog({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const canSubmit = code.trim().length > 0 && !error && !loading
@@ -146,6 +149,7 @@ export function MermaidDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()

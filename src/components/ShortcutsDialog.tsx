@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import { X } from './Icons'
 import { SHORTCUT_GROUPS, formatShortcut } from '../editor/shortcuts'
 
@@ -8,6 +9,9 @@ interface ShortcutsDialogProps {
 }
 
 export function ShortcutsDialog({ onClose }: ShortcutsDialogProps) {
+  const dialogRef = useRef<HTMLElement>(null)
+  useFocusTrap(dialogRef)
+
   const isMac =
     typeof navigator !== 'undefined' &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
@@ -31,6 +35,7 @@ export function ShortcutsDialog({ onClose }: ShortcutsDialogProps) {
       }}
     >
       <section
+        ref={dialogRef}
         className="shortcuts-dialog"
         role="dialog"
         aria-modal="true"

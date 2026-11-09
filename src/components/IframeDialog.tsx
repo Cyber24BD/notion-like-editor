@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import {
   clampIframeHeight,
   defaultIframeAttrs,
@@ -49,6 +50,8 @@ export function IframeDialog({
   )
   const [reloadKey, setReloadKey] = useState(0)
   const [copied, setCopied] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const parsed = useMemo(() => parseIframeInput(raw), [raw])
@@ -127,6 +130,7 @@ export function IframeDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()

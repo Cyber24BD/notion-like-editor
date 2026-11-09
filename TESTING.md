@@ -41,6 +41,8 @@ Playwright starts Vite on port `5199` and uses:
 - Sandboxed Custom HTML editing, isolation, advanced sandbox controls, script errors,
   focus trapping, download warnings and auto-sized blocks are covered in
   `tests/e2e/custom-html.spec.ts`
+- Keyboard/touch page-menu moves, indent/outdent, Move to page and cover keyboard
+  positioning are covered in `tests/e2e/sidebar-actions.spec.ts` and `p2.spec.ts`.
 
 Useful commands:
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import { X } from './Icons'
 
 export type ColorPaletteKind = 'text' | 'highlight'
@@ -87,6 +88,7 @@ export function ColorPalette({
   onClose,
 }: ColorPaletteProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(containerRef)
   const inputRef = useRef<HTMLInputElement>(null)
   const [recent, setRecent] = useState<string[]>(readRecent)
   const presets = kind === 'text' ? TEXT_COLORS : HIGHLIGHT_COLORS

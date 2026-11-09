@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react'
 import { createNotionPortal } from './NotionPortal'
+import { useFocusTrap } from './useFocusTrap'
 import katex from 'katex'
 import {
   MATH_SYMBOLS,
@@ -33,6 +34,8 @@ export function MathDialog({
   const [latex, setLatex] = useState(initialLatex)
   const [mode, setMode] = useState<MathMode>(initialMode)
   const [copied, setCopied] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(dialogRef)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const preview = useMemo(() => {
@@ -138,6 +141,7 @@ export function MathDialog({
 
   return createNotionPortal(
     <div
+      ref={dialogRef}
       className="video-dialog-scrim"
       onPointerDown={(event) => {
         if (event.target === event.currentTarget) onClose()
